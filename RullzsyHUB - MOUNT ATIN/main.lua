@@ -49,6 +49,45 @@ local API_CONFIG = {
     get_user_endpoint = "/get_user.php",
 }
 
+-- File config (sama dengan auth script)
+local FILE_CONFIG = {
+    folder = "RullzsyHUB",
+    subfolder = "auth",
+    filename = "token.dat"
+}
+
+local function getAuthFilePath()
+    return FILE_CONFIG.folder .. "/" .. FILE_CONFIG.subfolder .. "/" .. FILE_CONFIG.filename
+end
+
+-- Load token from file
+local function loadToken()
+    local success, result = pcall(function()
+        if not isfile(getAuthFilePath()) then
+            return nil
+        end
+        
+        local content = readfile(getAuthFilePath())
+        local data = HttpService:JSONDecode(content)
+        
+        -- Verify username matches
+        if data.username == LocalPlayer.Name then
+            print("[ACCOUNT] Token loaded from file")
+            return data.token
+        else
+            print("[ACCOUNT] Username mismatch")
+            return nil
+        end
+    end)
+    
+    if success then
+        return result
+    else
+        warn("[ACCOUNT] Failed to load token: " .. tostring(result))
+        return nil
+    end
+end
+
 -- Fungsi HTTP aman
 local function safeHttpRequest(url, method, data, headers)
     method = method or "GET"
@@ -72,7 +111,25 @@ local function safeHttpRequest(url, method, data, headers)
     return false, tostring(res)
 end
 
-local savedToken = getgenv().UserToken or nil
+-- Get token from multiple sources (priority order)
+local function getToken()
+    -- Priority 1: File system (most reliable)
+    local fileToken = loadToken()
+    if fileToken and fileToken ~= "" then
+        print("[ACCOUNT] Using token from file")
+        return fileToken
+    end
+    
+    -- Priority 2: getgenv (for compatibility)
+    local envToken = getgenv().UserToken
+    if envToken and envToken ~= "" then
+        print("[ACCOUNT] Using token from getgenv")
+        return envToken
+    end
+    
+    print("[ACCOUNT] No token found")
+    return nil
+end
 
 local userData = {
     username = "Guest",
@@ -120,17 +177,19 @@ end
 
 -- Update data akun
 local function updateAccountInfo()
+    local savedToken = getToken()
+    
     if not savedToken or savedToken == "" then
         InfoParagraph:Set({
-            Title = "🚫 Error",
-            Content = "- Kamu tidak memiliki token.\n- Silakan lakukan otentikasi terlebih dahulu di tab otentikasi."
+            Title = "🚫 Tidak Ada Token",
+            Content = "❌ Kamu belum login atau token tidak ditemukan.\n\n💡 Silakan lakukan authentication terlebih dahulu.\n\n📍 Token dicari dari:\n  1. File: RullzsyHUB/auth/token.dat\n  2. Memory: getgenv().UserToken"
         })
         return
     end
 
     InfoParagraph:Set({
-        Title = "🔄 Muat Data Akun",
-        Content = "⏳ Menghubungkan ke server...\n📡 Mendapatkan informasi akun Anda..."
+        Title = "🔄 Memuat Data Akun",
+        Content = "⏳ Menghubungkan ke server...\n📡 Mendapatkan informasi akun Anda...\n🔐 Token ditemukan!"
     })
 
     local encodedToken = HttpService:UrlEncode(tostring(savedToken))
@@ -145,7 +204,7 @@ local function updateAccountInfo()
     if not ok then
         InfoParagraph:Set({
             Title = "🚨 Connection Error",
-            Content = "❌ Failed to connect to server.\n🌐 Please check your internet connection.\n\nError: " .. tostring(res)
+            Content = "❌ Gagal terhubung ke server.\n🌐 Cek koneksi internet Anda.\n\n🔧 Error: " .. tostring(res)
         })
         return
     end
@@ -154,7 +213,7 @@ local function updateAccountInfo()
     if not okDecode or type(data) ~= "table" then
         InfoParagraph:Set({
             Title = "🔐 Server Error",
-            Content = "❌ Invalid server response format.\n🛠️ Please try again later."
+            Content = "❌ Format response server tidak valid.\n🛠️ Silakan coba lagi nanti.\n\n🔧 Debug: Invalid JSON"
         })
         return
     end
@@ -163,7 +222,7 @@ local function updateAccountInfo()
         local errorMsg = tostring(data.message or "Authentication failed")
         InfoParagraph:Set({
             Title = "🔐 Authentication Failed",
-            Content = "❌ " .. errorMsg .. "\n🔄 Please re-authenticate di tab Authentication."
+            Content = "❌ " .. errorMsg .. "\n\n💡 Token mungkin expired atau invalid.\n🔄 Silakan login ulang di tab Authentication."
         })
         return
     end
@@ -173,18 +232,29 @@ local function updateAccountInfo()
     userData.role = tostring(data.role or "Member")
     userData.expire_timestamp = tonumber(data.expire_timestamp) or (os.time() + 86400)
 
+    print("[ACCOUNT] User data loaded:")
+    print("  Username: " .. userData.username)
+    print("  Role: " .. userData.role)
+    print("  Expire: " .. os.date("%Y-%m-%d %H:%M:%S", userData.expire_timestamp))
+
     -- Realtime update
     RunService.Heartbeat:Connect(function()
         local emoji, timeStr = getExpiryStatusRealtime(userData.expire_timestamp)
         InfoParagraph:Set({
             Title = "👨🏻‍💼 Welcome, " .. userData.username,
             Content = string.format(
-                "🏷️ Role         : %s\n⏰ Expire       : %s %s",
+                "🏷️ Role         : %s\n⏰ Expire       : %s %s\n\n✅ Token aktif dan terverifikasi!",
                 userData.role,
                 emoji, timeStr
             )
         })
     end)
+    
+    Rayfield:Notify({
+        Title = "✅ Data Loaded",
+        Content = "Welcome back, " .. userData.username .. "!",
+        Duration = 3
+    })
 end
 
 -- Buttons
@@ -193,8 +263,34 @@ local ActionsSection = AccountTab:CreateSection("Quick Actions")
 AccountTab:CreateButton({
     Name = "🔄 Refresh Informasi Akun",
     Callback = function()
-        savedToken = getgenv().UserToken
+        Rayfield:Notify({
+            Title = "🔄 Refreshing...",
+            Content = "Mengambil data terbaru...",
+            Duration = 2
+        })
+        task.wait(0.5)
         updateAccountInfo()
+    end
+})
+
+AccountTab:CreateButton({
+    Name = "🔍 Check Token Status",
+    Callback = function()
+        local token = getToken()
+        if token and token ~= "" then
+            local maskedToken = string.sub(token, 1, 8) .. "..." .. string.sub(token, -4)
+            Rayfield:Notify({
+                Title = "✅ Token Found",
+                Content = "Token: " .. maskedToken .. "\nLength: " .. #token .. " chars",
+                Duration = 4
+            })
+        else
+            Rayfield:Notify({
+                Title = "❌ No Token",
+                Content = "Token tidak ditemukan.\nSilakan login terlebih dahulu.",
+                Duration = 4
+            })
+        end
     end
 })
 
@@ -219,7 +315,9 @@ AccountTab:CreateButton({
     end
 })
 
+-- Auto load on tab open
 task.spawn(function()
+    print("[ACCOUNT] Initializing account tab...")
     task.wait(2)
     updateAccountInfo()
 end)
@@ -227,7 +325,6 @@ end)
 -------------------------------------------------------------
 -- ACCOUNT - END
 -------------------------------------------------------------
-
 
 
 -------------------------------------------------------------
@@ -2099,3 +2196,4 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
