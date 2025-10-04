@@ -36,7 +36,7 @@ local Button = MainTab:CreateButton({
       Rayfield:Destroy()
 
       -- Jalankan Script Mount Atin
-      loadstring(game:HttpGet("https://example.com/atin.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ATIN/main.lua"))()
    end,
 })
 
