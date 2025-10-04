@@ -40,27 +40,6 @@ local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local setclipboard = setclipboard or toclipboard
 
 
--- Load Library UI
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/UI%20Liblary/Rayfield.lua'))()
-
--- Window Loading
-local Window = Rayfield:CreateWindow({
-   Name = "RullzsyHUB | Key System",
-   Icon = "braces",
-   LoadingTitle = "Created By RullzsyHUB",
-   LoadingSubtitle = "Follow TikTok: @rullzsy99",
-   ConfigurationSaving = {
-       Enabled = true,
-       FolderName = "RullzsyHUB",
-       FileName = "auth_config"
-   }
-})
-
--- Services
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local RobloxUsername = LocalPlayer.Name
 
 -------------------------------------------------------------
 -- FILE SYSTEM CONFIGURATION
@@ -74,8 +53,6 @@ end
 -------------------------------------------------------------
 -- ACCOUNT TAB
 -------------------------------------------------------------
-local AccountTab = Window:CreateTab("Account", "user")
-
 local API_CONFIG = {
     base_url = "https://monotonal-unhoneyed-rita.ngrok-free.dev",
     get_user_endpoint = "/get_user.php",
@@ -292,7 +269,7 @@ AccountTab:CreateButton({
 
 AccountTab:CreateParagraph({
     Title = "💡 Info",
-    Content = "Untuk perpanjang key, buat ticket di Discord."
+    Content = "Untuk perpanjang key, silahkan buat ticket di Discord."
 })
 
 -- Auto load account info
@@ -300,51 +277,10 @@ task.spawn(function()
     task.wait(1)
     updateAccountInfo()
 end)
-
 -------------------------------------------------------------
 -- ACCOUNT TAB - END
 -------------------------------------------------------------
 
--------------------------------------------------------------
--- FEATURES TAB (Example)
--------------------------------------------------------------
-local FeaturesTab = Window:CreateTab("Features", "star")
-
-FeaturesTab:CreateSection("Main Features")
-
-FeaturesTab:CreateButton({
-    Name = "Example Button",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "Button Clicked",
-            Content = "This is an example feature!",
-            Duration = 3
-        })
-    end
-})
-
-FeaturesTab:CreateToggle({
-    Name = "Example Toggle",
-    CurrentValue = false,
-    Callback = function(Value)
-
-    end,
-})
-
-FeaturesTab:CreateParagraph({
-    Title = "ℹ️ Information",
-    Content = "Add your features here!"
-})
-
--------------------------------------------------------------
--- FEATURES TAB - END
--------------------------------------------------------------
-
-Rayfield:Notify({
-    Title = "✅ Ready!",
-    Content = "RullzsyHUB loaded successfully!",
-    Duration = 3
-})
 
 
 -------------------------------------------------------------
@@ -2216,6 +2152,3 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
-
-
-
