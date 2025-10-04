@@ -65,48 +65,37 @@ local RobloxUsername = LocalPlayer.Name
 -------------------------------------------------------------
 -- FILE SYSTEM CONFIGURATION
 -------------------------------------------------------------
+-- Check if authenticated
+if not getgenv().AuthComplete then
+    warn("[MAIN] Not authenticated! Please run auth script first.")
+    return
+end
+
+-------------------------------------------------------------
+-- ACCOUNT TAB
+-------------------------------------------------------------
+local AccountTab = Window:CreateTab("Account", "user")
+
+local API_CONFIG = {
+    base_url = "https://monotonal-unhoneyed-rita.ngrok-free.dev",
+    get_user_endpoint = "/get_user.php",
+}
+
 local FILE_CONFIG = {
     folder = "RullzsyHUB",
     subfolder = "auth",
     filename = "token.dat"
 }
 
--- Get full path
 local function getAuthFilePath()
     return FILE_CONFIG.folder .. "/" .. FILE_CONFIG.subfolder .. "/" .. FILE_CONFIG.filename
 end
 
--- Save token to file
-local function saveToken(token)
-    local success, err = pcall(function()
-        if not isfolder(FILE_CONFIG.folder) then
-            makefolder(FILE_CONFIG.folder)
-        end
-        
-        local authFolder = FILE_CONFIG.folder .. "/" .. FILE_CONFIG.subfolder
-        if not isfolder(authFolder) then
-            makefolder(authFolder)
-        end
-        
-        local data = {
-            token = token,
-            username = RobloxUsername,
-            saved_at = os.time(),
-            version = "1.0"
-        }
-        
-        writefile(getAuthFilePath(), HttpService:JSONEncode(data))
-    end)
-    
-    if not success then
-        warn("[AUTH] Failed to save token: " .. tostring(err))
+local function loadTokenFromFile()
+    if not isfile then
+        return nil
     end
     
-    return success
-end
-
--- Load token from file
-local function loadToken()
     local success, result = pcall(function()
         if not isfile(getAuthFilePath()) then
             return nil
@@ -115,183 +104,108 @@ local function loadToken()
         local content = readfile(getAuthFilePath())
         local data = HttpService:JSONDecode(content)
         
-        -- Verify username matches
-        if data.username == RobloxUsername then
+        if data.username == LocalPlayer.Name then
             return data.token
-        else
-            return nil
         end
+        return nil
     end)
     
-    if success then
-        return result
-    else
-        warn("[AUTH] Failed to load token: " .. tostring(result))
-        return nil
+    return success and result or nil
+end
+
+local function getToken()
+    local fileToken = loadTokenFromFile()
+    if fileToken and fileToken ~= "" then
+        return fileToken
     end
+    
+    local envToken = getgenv().UserToken
+    if envToken and envToken ~= "" then
+        return tostring(envToken)
+    end
+    
+    return nil
 end
 
--- Delete token file
-local function deleteToken()
-    pcall(function()
-        if isfile(getAuthFilePath()) then
-            delfile(getAuthFilePath())
-        end
-    end)
-end
--------------------------------------------------------------
--- FILE SYSTEM CONFIGURATION - END
--------------------------------------------------------------
-
--------------------------------------------------------------
--- API
--------------------------------------------------------------
-local API_CONFIG = {
-    base_url = "https://monotonal-unhoneyed-rita.ngrok-free.dev",
-    validate_endpoint = "/validate.php",
-    main_script_url = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20LOADER/main.lua",
-    timeout = 15
-}
-
-local UserData = {}
-local IsAuthenticated = false
-local IsRunningScript = false
-local enteredToken = ""
-local TokenInputObj = nil -- Reference to input object
--------------------------------------------------------------
--- API - END
--------------------------------------------------------------
-
--------------------------------------------------------------
--- SAFE HTTP REQUEST
--------------------------------------------------------------
 local function safeHttpRequest(url, method, data, headers)
     method = method or "GET"
-    local requestData = {
-        Url = url,
-        Method = method
-    }
-    
-    if headers then
-        requestData.Headers = headers
-    end
-    
-    if data and method == "POST" then
-        requestData.Body = data
-    end
-    
-    local ok, res = pcall(function()
-        return HttpService:RequestAsync(requestData)
-    end)
-    
-    if ok and res then
-        if res.Success and res.StatusCode == 200 then
-            return true, res.Body
-        else
-            return false, "HTTP Error: " .. (res.StatusCode or "Unknown") .. " - " .. (res.StatusMessage or "Unknown error")
-        end
+    local requestData = { Url = url, Method = method }
+
+    if headers then requestData.Headers = headers end
+    if data and method == "POST" then requestData.Body = data end
+
+    local ok, res = pcall(function() return HttpService:RequestAsync(requestData) end)
+    if ok and res and res.Success and res.StatusCode == 200 then
+        return true, res.Body
     end
 
     if method == "GET" then
-        local ok2, res2 = pcall(function()
-            return HttpService:GetAsync(url, false)
-        end)
-        if ok2 and res2 then 
-            return true, res2 
-        end
-
-        local ok3, res3 = pcall(function()
-            return game:HttpGet(url)
-        end)
-        if ok3 and res3 then 
-            return true, res3 
-        end
+        local ok2, res2 = pcall(function() return HttpService:GetAsync(url, false) end)
+        if ok2 and res2 then return true, res2 end
+        local ok3, res3 = pcall(function() return game:HttpGet(url) end)
+        if ok3 and res3 then return true, res3 end
     end
 
     return false, tostring(res)
 end
--------------------------------------------------------------
--- SAFE HTTP REQUEST - END
--------------------------------------------------------------
 
--------------------------------------------------------------
--- FETCH AND RUN MAIN SCRIPT
--------------------------------------------------------------
-local function fetchAndRunMainScript()
-    if IsRunningScript then return end
-    IsRunningScript = true
+local userData = {
+    username = "Guest",
+    role = "Member",
+    expire_timestamp = os.time()
+}
 
-    Rayfield:Notify({
-        Title = "🔄 Loading Script",
-        Content = "Fetching from server...",
-        Duration = 3
-    })
+local updateConnection = nil
 
-    local ok, res = safeHttpRequest(API_CONFIG.main_script_url)
-    if not ok then
-        IsRunningScript = false
-        Rayfield:Notify({ 
-            Title = "❌ Failed to Fetch", 
-            Content = "Network error: " .. tostring(res), 
-            Duration = 6 
-        })
-        return false
-    end
+AccountTab:CreateSection("Informasi Akun")
+local InfoParagraph = AccountTab:CreateParagraph({
+    Title = "📊 Status Akun",
+    Content = "🔄 Memuat data...\n⏳ Tunggu sebentar..."
+})
 
-    local fn, err = loadstring(res)
-    if not fn then
-        IsRunningScript = false
-        Rayfield:Notify({ 
-            Title = "❌ Compile Error", 
-            Content = "Script error: " .. tostring(err), 
-            Duration = 6 
-        })
-        return false
-    end
-
-    local ok2, runErr = pcall(fn)
-    if not ok2 then
-        IsRunningScript = false
-        Rayfield:Notify({ 
-            Title = "❌ Runtime Error", 
-            Content = "Execution error: " .. tostring(runErr), 
-            Duration = 6 
-        })
-        return false
-    end
-
-    Rayfield:Notify({
-        Title = "✅ Success",
-        Content = "Script loaded successfully!",
-        Duration = 3
-    })
-    IsAuthenticated = true
-    
-    -- Notify other scripts that auth is complete
-    getgenv().AuthComplete = true
-    getgenv().AuthTimestamp = os.time()
-    
-    -- Close auth window after successful login
-    task.wait(1)
-    Rayfield:Destroy()
-    
-    return true
+local function formatTimeRealtime(seconds)
+    if seconds <= 0 then return "Expired" end
+    local days = math.floor(seconds / 86400)
+    local hours = math.floor((seconds % 86400) / 3600)
+    local minutes = math.floor((seconds % 3600) / 60)
+    local secs = math.floor(seconds % 60)
+    return string.format("%d Hari | %02d Jam | %02d Menit | %02d Detik", days, hours, minutes, secs)
 end
--------------------------------------------------------------
--- FETCH AND RUN MAIN SCRIPT - END
--------------------------------------------------------------
 
--------------------------------------------------------------
--- VALIDATE TOKEN WITH PROPER ERROR HANDLING
--------------------------------------------------------------
-local function ValidateToken(token)
-    if not token or token == "" then
-        return false, "Token cannot be empty"
+local function getExpiryStatusRealtime(expireTimestamp)
+    local remaining = expireTimestamp - os.time()
+    local emoji = "🟢"
+
+    if remaining <= 0 then
+        emoji = "🔴"
+        return emoji, "Expired"
+    elseif remaining <= 86400 then
+        emoji = "🟠"
+    elseif remaining <= 259200 then
+        emoji = "🟡"
     end
 
-    local encodedToken = HttpService:UrlEncode(tostring(token))
-    local encodedUsername = HttpService:UrlEncode(tostring(RobloxUsername))
-    local url = API_CONFIG.base_url .. API_CONFIG.validate_endpoint .. "?token=" .. encodedToken .. "&roblox_username=" .. encodedUsername
+    return emoji, formatTimeRealtime(remaining)
+end
+
+local function updateAccountInfo()
+    local savedToken = getToken()
+    
+    if not savedToken or savedToken == "" then
+        InfoParagraph:Set({
+            Title = "🚫 Token Error",
+            Content = "❌ Token tidak ditemukan.\nSilakan restart dan login ulang."
+        })
+        return
+    end
+
+    InfoParagraph:Set({
+        Title = "🔄 Memuat Data",
+        Content = "⏳ Menghubungkan ke server..."
+    })
+
+    local encodedToken = HttpService:UrlEncode(tostring(savedToken))
+    local url = API_CONFIG.base_url .. API_CONFIG.get_user_endpoint .. "?token=" .. encodedToken
     
     local headers = {
         ["Content-Type"] = "application/json",
@@ -301,268 +215,136 @@ local function ValidateToken(token)
 
     local ok, res = safeHttpRequest(url, "GET", nil, headers)
     if not ok then
-        return false, "Connection error: " .. tostring(res)
+        InfoParagraph:Set({
+            Title = "🚨 Connection Error",
+            Content = "❌ Gagal terhubung ke server.\n" .. tostring(res)
+        })
+        return
     end
 
-    local okDecode, data = pcall(function()
-        return HttpService:JSONDecode(res)
+    local okDecode, data = pcall(function() return HttpService:JSONDecode(res) end)
+    if not okDecode or type(data) ~= "table" then
+        InfoParagraph:Set({
+            Title = "🔐 Server Error",
+            Content = "❌ Format response tidak valid."
+        })
+        return
+    end
+
+    if data.status ~= "success" then
+        InfoParagraph:Set({
+            Title = "🔐 Authentication Failed",
+            Content = "❌ " .. tostring(data.message or "Error")
+        })
+        return
+    end
+
+    userData.username = tostring(data.name or "Unknown")
+    userData.role = tostring(data.role or "Member")
+    userData.expire_timestamp = tonumber(data.expire_timestamp) or (os.time() + 86400)
+
+    if updateConnection then
+        updateConnection:Disconnect()
+    end
+
+    updateConnection = RunService.Heartbeat:Connect(function()
+        local emoji, timeStr = getExpiryStatusRealtime(userData.expire_timestamp)
+        InfoParagraph:Set({
+            Title = "👨🏻‍💼 Welcome, " .. userData.username,
+            Content = string.format(
+                "🏷️  Role       : %s\n⏰  Expire     : %s %s\n\n✅ Status: Aktif",
+                userData.role,
+                emoji, timeStr
+            )
+        })
     end)
     
-    if not okDecode then
-        return false, "Invalid server response format"
-    end
-    
-    if type(data) ~= "table" then
-        return false, "Invalid server response structure"
-    end
-
-    if tostring(data.status or ""):lower() == "success" then
-        UserData = data
-        return true, data
-    else
-        local errorMsg = tostring(data.message or "Authentication failed")
-        return false, errorMsg
-    end
+    Rayfield:Notify({
+        Title = "✅ Data Loaded",
+        Content = "Welcome, " .. userData.username .. "!",
+        Duration = 3
+    })
 end
--------------------------------------------------------------
--- VALIDATE TOKEN WITH PROPER ERROR HANDLING - END
--------------------------------------------------------------
 
--------------------------------------------------------------
--- VERIFY AND LOGIN FUNCTION
--------------------------------------------------------------
-local function verifyAndLogin(token, autoVerify)
-    local currentToken = token:gsub("%s+", ""):gsub("[\n\r\t]", "")
-    
-    if currentToken == "" or #currentToken < 5 then
-        if not autoVerify then
-            Rayfield:Notify({ 
-                Title = "⚠️ Empty Key", 
-                Content = "Please enter your key first.", 
-                Duration = 3 
-            })
-        end
-        return false
+AccountTab:CreateSection("Quick Actions")
+
+AccountTab:CreateButton({
+    Name = "🔄 Refresh Informasi",
+    Callback = function()
+        updateAccountInfo()
     end
+})
 
-    Rayfield:Notify({ 
-        Title = "🔄 Validating", 
-        Content = "Checking key for " .. RobloxUsername .. "...", 
-        Duration = 2 
-    })
-
-    local valid, result = ValidateToken(currentToken)
-    if valid then
-        Rayfield:Notify({ 
-            Title = "✅ Key Valid", 
-            Content = "Welcome! Loading script...", 
-            Duration = 3 
-        })
-        
-        -- Save token to file AND getgenv for compatibility
-        saveToken(currentToken)
-        getgenv().UserToken = currentToken
-        
-        task.wait(1)
-        fetchAndRunMainScript()
-        return true
-    else
-        Rayfield:Notify({ 
-            Title = "❌ Invalid Key", 
-            Content = tostring(result), 
-            Duration = 5 
-        })
-        return false
-    end
-end
--------------------------------------------------------------
--- VERIFY AND LOGIN FUNCTION - END
--------------------------------------------------------------
-
--------------------------------------------------------------
--- AUTH & INTERFACE
--------------------------------------------------------------
-local function CreateAuthInterface()
-    local AuthTab = Window:CreateTab("Authentication", "key")
-
-    AuthTab:CreateSection("Welcome to RullzsyHUB")
-
-    AuthTab:CreateParagraph({
-        Title = "Key Authentication Required",
-        Content = "Username: " .. RobloxUsername .. "\n\nThe key is only valid for one device and specific to your Roblox username. Please purchase your key at RullzsyHUB."
-    })
-    
-    TokenInputObj = AuthTab:CreateInput({
-        Name = "🔒   Enter Your Key",
-        PlaceholderText = "Paste your key here...",
-        RemoveTextAfterFocusLost = false,
-        Callback = function(t) 
-            enteredToken = tostring(t or "")
-            enteredToken = enteredToken:gsub("%s+", ""):gsub("[\n\r\t]", "")
-        end
-    })
-
-    AuthTab:CreateButton({
-        Name = "✅   Verify Key",
-        Callback = function()
-            verifyAndLogin(enteredToken, false)
-        end
-    })
-
-    AuthTab:CreateSection("Quick Actions")
-
-    AuthTab:CreateButton({
-        Name = "📋   Paste Key from Clipboard",
-        Callback = function()
-            if not getclipboard then
-                Rayfield:Notify({ 
-                    Title = "❌ Not Supported", 
-                    Content = "Your executor doesn't support clipboard.", 
-                    Duration = 3 
-                })
-                return
-            end
-            
-            local clipboardContent = getclipboard()
-            if not clipboardContent or clipboardContent == "" then
-                Rayfield:Notify({ 
-                    Title = "⚠️ Empty Clipboard", 
-                    Content = "No key found in clipboard.", 
-                    Duration = 3 
-                })
-                return
-            end
-            
-            -- Clean clipboard content
-            local cleanedKey = clipboardContent:gsub("%s+", ""):gsub("[\n\r\t]", "")
-            
-            if #cleanedKey < 5 then
-                Rayfield:Notify({ 
-                    Title = "⚠️ Invalid Key", 
-                    Content = "Clipboard content too short.", 
-                    Duration = 3 
-                })
-                return
-            end
-            
-            enteredToken = cleanedKey
-            
-            Rayfield:Notify({ 
-                Title = "📋 Key Pasted", 
-                Content = "Auto-verifying key...", 
-                Duration = 2 
-            })
-            
-            task.wait(0.5)
-            verifyAndLogin(cleanedKey, true)
-        end
-    })
-
-    AuthTab:CreateButton({
-        Name = "🔄   Check Key Again",
-        Callback = function()
-            if enteredToken ~= "" and #enteredToken >= 5 then
-                verifyAndLogin(enteredToken, false)
-            else
-                Rayfield:Notify({ 
-                    Title = "⚠️ No Key", 
-                    Content = "Enter your key first.", 
-                    Duration = 3 
-                })
-            end
-        end
-    })
-
-    AuthTab:CreateSection("Need a Key?")
-    
-    AuthTab:CreateButton({
-        Name = "🌐   Get Key from Discord",
-        Callback = function()
-            local inviteLink = "https://discord.gg/KEajwZQaRd"
-            if setclipboard then 
-                setclipboard(inviteLink)
-                Rayfield:Notify({
-                    Title = "📋 Copied!",
-                    Content = "Discord link copied to clipboard.",
-                    Duration = 3,
-                })
-            else
-                Rayfield:Notify({
-                    Title = "🌐 Discord Link",
-                    Content = inviteLink,
-                    Duration = 5,
-                })
-            end
-        end,
-    })
-
-    AuthTab:CreateSection("Settings")
-    
-    AuthTab:CreateButton({
-        Name = "🗑️   Clear Saved Key",
-        Callback = function()
-            deleteToken()
+AccountTab:CreateButton({
+    Name = "🛒 Beli/Perpanjang Key",
+    Callback = function()
+        local discordLink = "https://discord.gg/KEajwZQaRd"
+        if setclipboard then
+            setclipboard(discordLink)
             Rayfield:Notify({
-                Title = "✅ Cleared",
-                Content = "Saved key has been deleted.",
-                Duration = 3,
+                Title = "📋 Copied!",
+                Content = "Discord link copied!",
+                Duration = 3
             })
-        end,
-    })
-end
--------------------------------------------------------------
--- AUTH & INTERFACE - END
--------------------------------------------------------------
-
--------------------------------------------------------------
--- AUTO LOGIN SYSTEM
--------------------------------------------------------------
--- Try to load token from file first
-local savedToken = loadToken()
-
-if savedToken and tostring(savedToken) ~= "" and #tostring(savedToken) >= 5 then
-    
-    Rayfield:Notify({ 
-        Title = "🔄 Auto-Login", 
-        Content = "Checking saved key...", 
-        Duration = 2 
-    })
-    
-    task.wait(1)
-    
-    local valid, result = ValidateToken(savedToken)
-    if valid then
-        Rayfield:Notify({ 
-            Title = "✅ Auto-Login Success", 
-            Content = "Welcome back! Loading...", 
-            Duration = 2 
-        })
-        
-        -- Set getgenv for other scripts compatibility
-        getgenv().UserToken = savedToken
-        
-        task.wait(1)
-        fetchAndRunMainScript()
-    else
-        deleteToken()
-        Rayfield:Notify({ 
-            Title = "⚠️ Key Expired", 
-            Content = "Please enter a new key.", 
-            Duration = 4 
-        })
-        CreateAuthInterface()
+        end
     end
-else
-    Rayfield:Notify({ 
-        Title = "👋 Welcome", 
-        Content = "Please enter your key to continue.", 
-        Duration = 3 
-    })
-    CreateAuthInterface()
-end
+})
+
+AccountTab:CreateParagraph({
+    Title = "💡 Info",
+    Content = "Untuk perpanjang key, buat ticket di Discord."
+})
+
+-- Auto load account info
+task.spawn(function()
+    task.wait(1)
+    updateAccountInfo()
+end)
+
 -------------------------------------------------------------
--- AUTO LOGIN SYSTEM - END
+-- ACCOUNT TAB - END
 -------------------------------------------------------------
+
+-------------------------------------------------------------
+-- FEATURES TAB (Example)
+-------------------------------------------------------------
+local FeaturesTab = Window:CreateTab("Features", "star")
+
+FeaturesTab:CreateSection("Main Features")
+
+FeaturesTab:CreateButton({
+    Name = "Example Button",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "Button Clicked",
+            Content = "This is an example feature!",
+            Duration = 3
+        })
+    end
+})
+
+FeaturesTab:CreateToggle({
+    Name = "Example Toggle",
+    CurrentValue = false,
+    Callback = function(Value)
+
+    end,
+})
+
+FeaturesTab:CreateParagraph({
+    Title = "ℹ️ Information",
+    Content = "Add your features here!"
+})
+
+-------------------------------------------------------------
+-- FEATURES TAB - END
+-------------------------------------------------------------
+
+Rayfield:Notify({
+    Title = "✅ Ready!",
+    Content = "RullzsyHUB loaded successfully!",
+    Duration = 3
+})
 
 
 -------------------------------------------------------------
@@ -2434,5 +2216,6 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
 
 
