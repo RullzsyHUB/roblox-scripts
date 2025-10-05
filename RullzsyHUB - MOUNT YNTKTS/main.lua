@@ -292,7 +292,7 @@ end)
 local AntiAFKEnabled = false
 local AntiAFKConnection = nil
 local LastActionTime = tick()
-local ActionInterval = 60
+local ActionInterval = 3
 
 -- Function to perform anti-AFK actions
 local function performAntiAFKAction()
@@ -361,7 +361,7 @@ local Section = BypassTab:CreateSection("List Bypass")
 
 -- Toggle
 local AntiAFKToggle = BypassTab:CreateToggle({
-   Name = "Bypass AFK",
+   Name = "Bypass AFK (Beta)",
    CurrentValue = false,
    Flag = "BypassAFKToggle",
    Callback = function(Value)
