@@ -356,6 +356,9 @@ player.CharacterAdded:Connect(function(newChar)
     end
 end)
 
+-- Section
+local Section = AutoWalkTab:CreateSection("List Bypass")
+
 -- Toggle
 local AntiAFKToggle = BypassTab:CreateToggle({
    Name = "Bypass AFK",
