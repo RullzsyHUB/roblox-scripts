@@ -40,13 +40,31 @@ local Button = MainTab:CreateButton({
    end,
 })
 
+local Button = MainTab:CreateButton({
+   Name = "🟢 SCRIPT MOUNT YNTKTS",
+   Callback = function()
+      Rayfield:Notify({
+         Title = "Executing Script",
+         Content = "Loading Mount Yntkts Script...",
+         Duration = 2,
+         Image = 4483362458,
+         Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
+      })
+
+      task.wait(0.5)
+      Rayfield:Destroy()
+
+      -- Jalankan Script Mount Atin
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YNTKTS/main.lua"))()
+   end,
+})
+
 -- =========================================================== =
 -- 🟠 SCRIPT DALAM TAHAP UPDATE (TIDAK BISA DIEKSEKUSI)
 -- =========================================================== =
 local UpdatingScripts = {
    "MOUNT YAHAYUK",
    "MOUNT STECU",
-   "MOUNT YNTKTS",
 }
 
 for _, name in ipairs(UpdatingScripts) do
