@@ -789,9 +789,7 @@ local function startPlayback(data, onComplete)
     end)
 end
 
--- Function to run the auto walk sequence from start to finish
 local function startAutoWalkSequence()
-    -- Area check untuk automatic mode
     if areaCheckEnabled then
         local ok = EnsureJsonFile(jsonFiles[1])
         if not ok then
@@ -827,11 +825,11 @@ local function startAutoWalkSequence()
         
         currentCheckpoint = currentCheckpoint + 1
         if currentCheckpoint > #jsonFiles then
-            -- All checkpoints completed
-            if autoRespawnEnabled then
+            -- Semua checkpoint selesai
+            if autoRespawnEnabled and currentCheckpoint - 1 == #jsonFiles then
                 respawnPlayer()
-                task.wait(3) -- Wait for respawn
-                
+                task.wait(3)
+
                 if loopingEnabled then
                     Rayfield:Notify({
                         Title = "Auto Walk",
@@ -850,29 +848,30 @@ local function startAutoWalkSequence()
                         Image = "check-check"
                     })
                 end
-            elseif loopingEnabled then
-                Rayfield:Notify({
-                    Title = "Auto Walk",
-                    Content = "Semua checkpoint selesai! Looping dari awal...",
-                    Duration = 3,
-                    Image = "repeat"
-                })
-                task.wait(1)
-                startAutoWalkSequence()
             else
-                autoLoopEnabled = false
-                Rayfield:Notify({
-                    Title = "Auto Walk",
-                    Content = "Auto walk selesai! Semua checkpoint sudah dilewati.",
-                    Duration = 5,
-                    Image = "check-check"
-                })
+                if loopingEnabled then
+                    Rayfield:Notify({
+                        Title = "Auto Walk",
+                        Content = "Semua checkpoint selesai! Looping dari awal...",
+                        Duration = 3,
+                        Image = "repeat"
+                    })
+                    task.wait(1)
+                    startAutoWalkSequence()
+                else
+                    autoLoopEnabled = false
+                    Rayfield:Notify({
+                        Title = "Auto Walk",
+                        Content = "Auto walk selesai! Semua checkpoint sudah dilewati.",
+                        Duration = 5,
+                        Image = "check-check"
+                    })
+                end
             end
             return
         end
 
         local checkpointFile = jsonFiles[currentCheckpoint]
-
         local ok, path = EnsureJsonFile(checkpointFile)
         if not ok then
             Rayfield:Notify({
@@ -890,7 +889,7 @@ local function startAutoWalkSequence()
             if currentCheckpoint == 1 then
                 Rayfield:Notify({
                     Title = "Auto Walk (Automatic)",
-                    Content = "Auto walk berhasil di jalankan",
+                    Content = "Auto walk berhasil dijalankan",
                     Duration = 2,
                     Image = "bot"
                 })
@@ -922,11 +921,11 @@ local function startManualAutoWalkSequence(startCheckpoint)
         
         currentCheckpoint = currentCheckpoint + 1
         if currentCheckpoint > #jsonFiles then
-            -- All checkpoints completed
-            if autoRespawnEnabled then
+            -- Semua checkpoint selesai
+            if autoRespawnEnabled and currentCheckpoint - 1 == #jsonFiles then
                 respawnPlayer()
                 task.wait(3)
-                
+
                 if loopingEnabled then
                     Rayfield:Notify({
                         Title = "Auto Walk (Manual)",
@@ -947,31 +946,32 @@ local function startManualAutoWalkSequence(startCheckpoint)
                         Image = "check-check"
                     })
                 end
-            elseif loopingEnabled then
-                Rayfield:Notify({
-                    Title = "Auto Walk (Manual)",
-                    Content = "Checkpoint terakhir selesai! Looping dari checkpoint 1...",
-                    Duration = 3,
-                    Image = "repeat"
-                })
-                task.wait(1)
-                currentCheckpoint = 0
-                playNext()
             else
-                autoLoopEnabled = false
-                isManualMode = false
-                Rayfield:Notify({
-                    Title = "Auto Walk (Manual)",
-                    Content = "Auto walk selesai!",
-                    Duration = 2,
-                    Image = "check-check"
-                })
+                if loopingEnabled then
+                    Rayfield:Notify({
+                        Title = "Auto Walk (Manual)",
+                        Content = "Checkpoint terakhir selesai! Looping dari checkpoint 1...",
+                        Duration = 3,
+                        Image = "repeat"
+                    })
+                    task.wait(1)
+                    currentCheckpoint = 0
+                    playNext()
+                else
+                    autoLoopEnabled = false
+                    isManualMode = false
+                    Rayfield:Notify({
+                        Title = "Auto Walk (Manual)",
+                        Content = "Auto walk selesai!",
+                        Duration = 2,
+                        Image = "check-check"
+                    })
+                end
             end
             return
         end
 
         local checkpointFile = jsonFiles[currentCheckpoint]
-
         local ok, path = EnsureJsonFile(checkpointFile)
         if not ok then
             Rayfield:Notify({
@@ -1032,11 +1032,8 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         return
     end
     
-    -- Check if area check is enabled
     if areaCheckEnabled then
-        -- Check if player is near checkpoint
         local isNear, distance = isPlayerNearCheckpoint(data)
-        
         if not isNear then
             Rayfield:Notify({
                 Title = "Area Check Failed",
@@ -1048,7 +1045,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         end
     end
     
-    -- Walk to starting point first
     local startPos = tableToVec(data[1].position)
     walkToStartingPoint(startPos, function(success)
         if not success then
@@ -1061,19 +1057,18 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
             return
         end
         
-        -- Start auto walk after reaching start point
         if loopingEnabled then
             startManualAutoWalkSequence(checkpointIndex)
         else
             Rayfield:Notify({
                 Title = "Auto Walk (Manual)",
-                Content = "Auto walk berhasil di jalankan",
+                Content = "Auto walk berhasil dijalankan",
                 Duration = 3,
                 Image = "bot"
             })
             
             startPlayback(data, function()
-                if autoRespawnEnabled then
+                if autoRespawnEnabled and fileName == "checkpoint_5.json" then
                     respawnPlayer()
                     Rayfield:Notify({
                         Title = "Auto Walk (Manual)",
