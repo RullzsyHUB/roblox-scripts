@@ -1,4 +1,4 @@
--------------------------------------------------------------
+	-------------------------------------------------------------
 -- LOAD LIBRARY UI
 -------------------------------------------------------------
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/UI%20Liblary/Rayfield.lua'))()
@@ -17,9 +17,7 @@ local Window = Rayfield:CreateWindow({
 -- TAB MENU
 -------------------------------------------------------------
 local AccountTab = Window:CreateTab("Account", "user")
-local BypassTab = Window:CreateTab("Bypass", "shield")
 local AutoWalkTab = Window:CreateTab("Auto Walk", "bot")
-local TeleportTab = Window:CreateTab("Teleport", "layers")
 local RunAnimationTab = Window:CreateTab("Run Animation", "person-standing")
 local UpdateTab = Window:CreateTab("Update Script", "file")
 local CreditsTab = Window:CreateTab("Credits", "scroll-text")
@@ -30,7 +28,6 @@ local CreditsTab = Window:CreateTab("Credits", "scroll-text")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
-local VirtualUser = game:GetService("VirtualUser")
 
 -------------------------------------------------------------
 -- IMPORT
@@ -39,7 +36,6 @@ local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-local setclipboard = setclipboard or toclipboard
 
 
 
@@ -286,118 +282,12 @@ end)
 
 
 -------------------------------------------------------------
--- BYPASS
--------------------------------------------------------------
--- Variables
-local AntiAFKEnabled = false
-local AntiAFKConnection = nil
-local LastActionTime = tick()
-local ActionInterval = 10
-
--- Function to perform anti-AFK actions
-local function performAntiAFKAction()
-    pcall(function()
-        -- Method 1: VirtualUser Input
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-
-        -- Method 2: Small movement
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local currentPos = character.HumanoidRootPart.CFrame
-            local randomOffset = Vector3.new(
-                math.random(-1, 1) * 0.1,
-                0,
-                math.random(-1, 1) * 0.1
-            )
-            character.HumanoidRootPart.CFrame = currentPos + randomOffset
-        end
-        LastActionTime = tick()
-    end)
-end
-
--- Function to start Anti-AFK
-local function startAntiAFK()
-    if AntiAFKConnection then
-        AntiAFKConnection:Disconnect()
-    end
-
-    performAntiAFKAction()
-
-    AntiAFKConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if not AntiAFKEnabled then return end
-        local currentTime = tick()
-        if currentTime - LastActionTime >= ActionInterval then
-            performAntiAFKAction()
-        end
-    end)
-
-    player.Idled:Connect(function()
-        if AntiAFKEnabled then
-            VirtualUser:CaptureController()
-            VirtualUser:ClickButton2(Vector2.new())
-        end
-    end)
-end
-
--- Function to stop Anti-AFK
-local function stopAntiAFK()
-    if AntiAFKConnection then
-        AntiAFKConnection:Disconnect()
-        AntiAFKConnection = nil
-    end
-end
-
--- Handle character respawn
-player.CharacterAdded:Connect(function(newChar)
-    character = newChar
-    if AntiAFKEnabled then
-        task.wait(1)
-        performAntiAFKAction()
-    end
-end)
-
--- Section
-local Section = BypassTab:CreateSection("List Bypass")
-
--- Toggle
-local AntiAFKToggle = BypassTab:CreateToggle({
-   Name = "Bypass AFK (Beta)",
-   CurrentValue = false,
-   Flag = "BypassAFKToggle",
-   Callback = function(Value)
-       AntiAFKEnabled = Value
-       if Value then
-           startAntiAFK()
-           Rayfield:Notify({
-               Title = "Bypass AFK",
-               Content = "Anti-AFK telah diaktifkan!",
-               Duration = 5,
-               Image = "shield"
-           })
-       else
-           stopAntiAFK()
-           Rayfield:Notify({
-               Title = "Bypass AFK",
-               Content = "Anti-AFK telah dimatikan.",
-               Duration = 3,
-               Image = "x"
-           })
-       end
-   end,
-})
--------------------------------------------------------------
--- BYPASS - END
--------------------------------------------------------------
-
-
-
--------------------------------------------------------------
 -- AUTO WALK
 -------------------------------------------------------------
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/json_mount_yahayuk"
+local jsonFolder = mainFolder .. "/json_mount_yntkts"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -408,12 +298,13 @@ end
 -- Server URL and JSON checkpoint file list
 local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk/"
 local jsonFiles = {
-    "spawnpoint.json"
+    "spawnpoint.json",
     "checkpoint_1.json",
 	"checkpoint_2.json",
 	"checkpoint_3.json",
 	"checkpoint_4.json",
 	"checkpoint_5.json",
+}
 
 -- Variables to control auto walk status
 local isPlaying = false
@@ -1186,7 +1077,7 @@ local AutoToggle = AutoWalkTab:CreateToggle({
 local Section = AutoWalkTab:CreateSection("Auto Walk (Manual)")
 
 -- Toggle Auto Walk (Spawnpoint)
-local SPToggle = AutoWalkTab:CreateToggle({
+local CP1Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Spawnpoint)",
     CurrentValue = false,
     Callback = function(Value)
@@ -1199,7 +1090,6 @@ local SPToggle = AutoWalkTab:CreateToggle({
         end
     end,
 })
-
 
 -- Toggle Auto Walk (Checkpoint 1)
 local CP1Toggle = AutoWalkTab:CreateToggle({
@@ -1262,162 +1152,12 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
 })
 
 -- Toggle Auto Walk (Checkpoint 5)
-local CP5Toggle = AutoWalkTab:CreateToggle({
+local CP4Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Checkpoint 5)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
             playSingleCheckpointFile("checkpoint_5.json", 6)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 6)
-local CP6Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 6)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_6.json", 7)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 7)
-local CP7Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 7)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_7.json", 8)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 8)
-local CP8Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 8)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_8.json", 9)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 9)
-local CP9Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 9)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_9.json", 10)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 10)
-local CP10Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 10)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_10.json", 11)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 11)
-local CP11Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 11)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_11.json", 12)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 12)
-local CP12Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 12)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_12.json", 13)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 13)
-local CP13Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 13)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_13.json", 14)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 14)
-local CP14Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 14)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_14.json", 15)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 15)
-local CP15Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 15)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_15.json", 16)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1738,6 +1478,8 @@ local stopUpdate = {false}
 
 -----| MENU 1 > UPDATE SCRIPT STATUS |-----
 -- Label to display the status of checking JSON files
+local Section = UpdateTab:CreateSection("Update Script Menu")
+
 local Label = UpdateTab:CreateLabel("Pengecekan file...")
 
 -- Task for checking JSON files during startup
@@ -1847,5 +1589,4 @@ CreditsTab:CreateLabel("UI: Rayfield Interface")
 CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
-
 -------------------------------------------------------------
