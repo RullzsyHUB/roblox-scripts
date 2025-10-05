@@ -2042,6 +2042,8 @@ local stopUpdate = {false}
 
 -----| MENU 1 > UPDATE SCRIPT STATUS |-----
 -- Label to display the status of checking JSON files
+local Section = UpdateTab:CreateSection("Update Script Menu")
+
 local Label = UpdateTab:CreateLabel("Pengecekan file...")
 
 -- Task for checking JSON files during startup
@@ -2152,4 +2154,5 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
 
