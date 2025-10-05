@@ -246,7 +246,7 @@ end
 AccountTab:CreateSection("Quick Actions")
 
 AccountTab:CreateButton({
-    Name = "🔄 Refresh Informasi",
+    Name = "🔄 Refresh Akun",
     Callback = function()
         updateAccountInfo()
     end
@@ -2152,3 +2152,4 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
