@@ -282,7 +282,7 @@ end)
 
 
 -------------------------------------------------------------
--- AUTO WALK
+-- AUTO WALK - ENHANCED VERSION
 -------------------------------------------------------------
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
@@ -300,10 +300,10 @@ local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-jso
 local jsonFiles = {
     "spawnpoint.json",
     "checkpoint_1.json",
-	"checkpoint_2.json",
-	"checkpoint_3.json",
-	"checkpoint_4.json",
-	"checkpoint_5.json",
+    "checkpoint_2.json",
+    "checkpoint_3.json",
+    "checkpoint_4.json",
+    "checkpoint_5.json",
 }
 
 -- Variables to control auto walk status
@@ -312,7 +312,7 @@ local playbackConnection = nil
 local autoLoopEnabled = false
 local currentCheckpoint = 0
 
---Variables for pause and resume features
+-- Variables for pause and resume features
 local isPaused = false
 local manualLoopEnabled = false
 local pausedTime = 0
@@ -327,18 +327,23 @@ local loopingEnabled = false
 local isManualMode = false
 local manualStartCheckpoint = 0
 
--- NEW: Avatar Size Compensation Variables
+-- Avatar Size Compensation Variables
 local recordedHipHeight = nil
 local currentHipHeight = nil
 local hipHeightOffset = 0
 
--- NEW: Speed Control Variables
-local playbackSpeed = 1.0 -- Default speed (1.0 = normal, 0.5 = half speed, 2.0 = double speed)
-
--- NEW: Footstep Sound Variables
+-- Speed Control Variables
+local playbackSpeed = 1.0
 local lastFootstepTime = 0
-local footstepInterval = 0.35 -- Time between footsteps (adjusts with speed)
-local leftFootstep = true -- Alternate between left and right foot
+local footstepInterval = 0.35
+local leftFootstep = true
+
+-- NEW: Area Check & Auto Respawn Variables
+local maxDistanceToCheckpoint = 50 -- Jarak maksimal dalam meter untuk memulai checkpoint
+local autoRespawnEnabled = false
+local isWalkingToStart = false
+local walkToStartSpeed = 16 -- Kecepatan berjalan ke titik awal
+local areaCheckEnabled = true -- Toggle untuk mengaktifkan/nonaktifkan area check
 -------------------------------------------------------------
 
 -----| AUTO WALK FUNCTIONS |-----
@@ -370,28 +375,25 @@ local function lerpAngle(a, b, t)
     return a + diff * t
 end
 
--- NEW: Function to calculate HipHeight offset
+-- Function to calculate HipHeight offset
 local function calculateHipHeightOffset()
     if not humanoid then return 0 end
     
     currentHipHeight = humanoid.HipHeight
     
-    -- If no recorded hip height, assume standard avatar (2.0)
     if not recordedHipHeight then
         recordedHipHeight = 2.0
     end
     
-    -- Calculate offset based on hip height difference
     hipHeightOffset = recordedHipHeight - currentHipHeight
     
     return hipHeightOffset
 end
 
--- NEW: Function to adjust position based on avatar size
+-- Function to adjust position based on avatar size
 local function adjustPositionForAvatarSize(position)
     if hipHeightOffset == 0 then return position end
     
-    -- Apply vertical offset to compensate for hip height difference
     return Vector3.new(
         position.X,
         position.Y - hipHeightOffset,
@@ -399,16 +401,14 @@ local function adjustPositionForAvatarSize(position)
     )
 end
 
--- NEW: Function to play footstep sounds
+-- Function to play footstep sounds
 local function playFootstepSound()
     if not humanoid or not character then return end
     
     pcall(function()
-        -- Get the HumanoidRootPart for raycasting
         local hrp = character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
         
-        -- Raycast downward to detect floor material
         local rayOrigin = hrp.Position
         local rayDirection = Vector3.new(0, -5, 0)
         local raycastParams = RaycastParams.new()
@@ -418,54 +418,26 @@ local function playFootstepSound()
         local rayResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
         
         if rayResult and rayResult.Instance then
-            local material = rayResult.Material
-            
-            -- Create a sound instance for footstep
             local sound = Instance.new("Sound")
-            sound.Volume = 0.8 -- Increased volume for louder footsteps
+            sound.Volume = 0.8
             sound.RollOffMaxDistance = 100
             sound.RollOffMinDistance = 10
-            
-            -- Assign sound based on material
-            -- Using Roblox's built-in footstep sounds
-            local soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            
-            -- Different sounds for different materials
-            if material == Enum.Material.Grass then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Wood or material == Enum.Material.WoodPlanks then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Metal or material == Enum.Material.DiamondPlate or material == Enum.Material.CorrodedMetal then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Water then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Snow or material == Enum.Material.Glacier or material == Enum.Material.Ice then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Sand then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            else
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            end
-            
-            sound.SoundId = soundId
+            sound.SoundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
             sound.Parent = hrp
             sound:Play()
             
-            -- Cleanup sound after it finishes
             game:GetService("Debris"):AddItem(sound, 1)
         end
     end)
 end
 
--- NEW: Function to simulate natural movement for footsteps
+-- Function to simulate natural movement for footsteps
 local function simulateNaturalMovement(moveDirection, velocity)
     if not humanoid or not character then return end
     
-    -- Calculate horizontal movement speed (ignore Y axis)
     local horizontalVelocity = Vector3.new(velocity.X, 0, velocity.Z)
     local speed = horizontalVelocity.Magnitude
     
-    -- Check if character is on ground
     local onGround = false
     pcall(function()
         local state = humanoid:GetState()
@@ -474,23 +446,20 @@ local function simulateNaturalMovement(moveDirection, velocity)
                    state == Enum.HumanoidStateType.Landed)
     end)
     
-    -- Only play footsteps if moving and on ground
     if speed > 0.5 and onGround then
         local currentTime = tick()
-        
-        -- Adjust footstep interval based on speed and playback speed
         local speedMultiplier = math.clamp(speed / 16, 0.3, 2)
         local adjustedInterval = footstepInterval / (speedMultiplier * playbackSpeed)
         
         if currentTime - lastFootstepTime >= adjustedInterval then
             playFootstepSound()
             lastFootstepTime = currentTime
-            leftFootstep = not leftFootstep -- Alternate feet
+            leftFootstep = not leftFootstep
         end
     end
 end
 
--- Function to ensure the JSON file is available (download if it does not exist)
+-- Function to ensure the JSON file is available
 local function EnsureJsonFile(fileName)
     local savePath = jsonFolder .. "/" .. fileName
     if isfile(savePath) then return true, savePath end
@@ -520,7 +489,6 @@ local function loadCheckpoint(fileName)
     end)
     
     if success and result then
-        -- NEW: Try to extract recorded hip height from first frame
         if result[1] and result[1].hipHeight then
             recordedHipHeight = result[1].hipHeight
         end
@@ -537,7 +505,6 @@ local function findSurroundingFrames(data, t)
     if t <= data[1].time then return 1, 1, 0 end
     if t >= data[#data].time then return #data, #data, 0 end
     
-    -- Binary search for efficiency
     local left, right = 1, #data
     while left < right - 1 do
         local mid = math.floor((left + right) / 2)
@@ -555,6 +522,107 @@ local function findSurroundingFrames(data, t)
     return i0, i1, alpha
 end
 
+-- NEW: Function to check if player is within checkpoint area
+local function isPlayerNearCheckpoint(checkpointData)
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        return false
+    end
+    
+    if not checkpointData or #checkpointData == 0 then
+        return false
+    end
+    
+    local hrp = character.HumanoidRootPart
+    local playerPos = hrp.Position
+    local startPos = tableToVec(checkpointData[1].position)
+    
+    local distance = (playerPos - startPos).Magnitude
+    
+    return distance <= maxDistanceToCheckpoint, distance
+end
+
+-- NEW: Function to walk player to starting point
+local function walkToStartingPoint(targetPosition, onReached)
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        if onReached then onReached(false) end
+        return
+    end
+    
+    isWalkingToStart = true
+    local hrp = character.HumanoidRootPart
+    
+    Rayfield:Notify({
+        Title = "Auto Walk",
+        Content = "Silahkan jalan ke checkpoint untuk memulai auto walk...",
+        Duration = 10,
+        Image = "navigation"
+    })
+    
+    -- Walking loop
+    local walkConnection
+    walkConnection = RunService.Heartbeat:Connect(function()
+        if not isWalkingToStart or not character or not character:FindFirstChild("HumanoidRootPart") then
+            if walkConnection then walkConnection:Disconnect() end
+            if onReached then onReached(false) end
+            return
+        end
+        
+        hrp = character.HumanoidRootPart
+        local currentPos = hrp.Position
+        local targetPos = Vector3.new(targetPosition.X, currentPos.Y, targetPosition.Z)
+        local distance = (targetPos - currentPos).Magnitude
+        
+        -- Check if reached
+        if distance < 3 then
+            isWalkingToStart = false
+            if walkConnection then walkConnection:Disconnect() end
+            
+            Rayfield:Notify({
+                Title = "Auto Walk",
+                Content = "Auto Walk Sedang berjalan...",
+                Duration = 2,
+                Image = "check"
+            })
+            
+            if onReached then onReached(true) end
+            return
+        end
+        
+        -- Move towards target
+        if humanoid then
+            local direction = (targetPos - currentPos).Unit
+            humanoid:Move(direction, false)
+            humanoid.WalkSpeed = walkToStartSpeed
+        end
+    end)
+end
+
+-- NEW: Function to respawn player
+local function respawnPlayer()
+    if not player or not player.Character then return end
+    
+    Rayfield:Notify({
+        Title = "Auto Respawn",
+        Content = "Respawning player...",
+        Duration = 2,
+        Image = "refresh-cw"
+    })
+    
+    local success = pcall(function()
+        player.Character:BreakJoints()
+    end)
+    
+    if not success then
+        -- Alternative respawn method
+        pcall(function()
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.Health = 0
+            end
+        end)
+    end
+end
+
 -- Function to stop auto walk playback
 local function stopPlayback()
     isPlaying = false
@@ -562,9 +630,15 @@ local function stopPlayback()
     pausedTime = 0
     accumulatedTime = 0
     lastPlaybackTime = 0
-    lastFootstepTime = 0 -- Reset footstep timer
+    lastFootstepTime = 0
     recordedHipHeight = nil
     hipHeightOffset = 0
+    isWalkingToStart = false
+    
+    if humanoid then
+        humanoid.WalkSpeed = 16 -- Reset to default
+    end
+    
     if playbackConnection then
         playbackConnection:Disconnect()
         playbackConnection = nil
@@ -589,7 +663,6 @@ local function startPlayback(data, onComplete)
     lastPlaybackTime = playbackStartTime
     local lastJumping = false
     
-    -- NEW: Calculate hip height offset at start
     calculateHipHeightOffset()
     
     if playbackConnection then
@@ -602,7 +675,6 @@ local function startPlayback(data, onComplete)
     if character and character:FindFirstChild("HumanoidRootPart") then
         local hrp = character.HumanoidRootPart
         local firstPos = tableToVec(first.position)
-        -- NEW: Apply avatar size adjustment
         firstPos = adjustPositionForAvatarSize(firstPos)
         local firstYaw = first.rotation or 0
         local startCFrame = CFrame.new(firstPos) * CFrame.Angles(0, firstYaw, 0)
@@ -637,19 +709,14 @@ local function startPlayback(data, onComplete)
         if not character or not character:FindFirstChild("HumanoidRootPart") then return end
         if not humanoid or humanoid.Parent ~= character then
             humanoid = character:FindFirstChild("Humanoid")
-            -- Recalculate offset if humanoid changed
             calculateHipHeightOffset()
         end
         
-        -- FPS-independent time tracking using deltaTime
         local currentTime = tick()
         local actualDelta = currentTime - lastPlaybackTime
         lastPlaybackTime = currentTime
         
-        -- Clamp delta to prevent huge jumps on lag spikes
         actualDelta = math.min(actualDelta, 0.1)
-        
-        -- NEW: Apply playback speed multiplier
         accumulatedTime = accumulatedTime + (actualDelta * playbackSpeed)
         
         local totalDuration = data[#data].time
@@ -660,7 +727,6 @@ local function startPlayback(data, onComplete)
             if character and character:FindFirstChild("HumanoidRootPart") then
                 local hrp = character.HumanoidRootPart
                 local finalPos = tableToVec(final.position)
-                -- NEW: Apply avatar size adjustment
                 finalPos = adjustPositionForAvatarSize(finalPos)
                 local finalYaw = final.rotation or 0
                 local targetCFrame = CFrame.new(finalPos) * CFrame.Angles(0, finalYaw, 0)
@@ -689,7 +755,6 @@ local function startPlayback(data, onComplete)
         local yaw1 = f1.rotation or 0
         
         local interpPos = lerpVector(pos0, pos1, alpha)
-        -- NEW: Apply avatar size adjustment to interpolated position
         interpPos = adjustPositionForAvatarSize(interpPos)
         
         local interpVel = lerpVector(vel0, vel1, alpha)
@@ -699,11 +764,9 @@ local function startPlayback(data, onComplete)
         local hrp = character.HumanoidRootPart
         local targetCFrame = CFrame.new(interpPos) * CFrame.Angles(0, interpYaw, 0)
         
-        -- Dynamic lerp factor based on deltaTime
         local lerpFactor = math.clamp(1 - math.exp(-10 * actualDelta), 0, 1)
         hrp.CFrame = hrp.CFrame:Lerp(targetCFrame, lerpFactor)
         
-        -- Apply velocity more directly
         pcall(function()
             hrp.AssemblyLinearVelocity = interpVel
         end)
@@ -712,7 +775,6 @@ local function startPlayback(data, onComplete)
             humanoid:Move(interpMove, false)
         end
         
-        -- NEW: Simulate footstep sounds
         simulateNaturalMovement(interpMove, interpVel)
         
         -- Handle jumping
@@ -729,6 +791,35 @@ end
 
 -- Function to run the auto walk sequence from start to finish
 local function startAutoWalkSequence()
+    -- Area check untuk automatic mode
+    if areaCheckEnabled then
+        local ok = EnsureJsonFile(jsonFiles[1])
+        if not ok then
+            Rayfield:Notify({
+                Title = "Error",
+                Content = "Failed to download checkpoint data",
+                Duration = 4,
+                Image = "ban"
+            })
+            return
+        end
+        
+        local firstData = loadCheckpoint(jsonFiles[1])
+        if firstData then
+            local isNear, distance = isPlayerNearCheckpoint(firstData)
+            
+            if not isNear then
+                Rayfield:Notify({
+                    Title = "Area Check Failed",
+                    Content = string.format("Terlalu jauh dari area start! Jarak: %.1fm (Max: %dm)", distance, maxDistanceToCheckpoint),
+                    Duration = 5,
+                    Image = "alert-triangle"
+                })
+                return
+            end
+        end
+    end
+    
     currentCheckpoint = 0
 
     local function playNext()
@@ -737,8 +828,29 @@ local function startAutoWalkSequence()
         currentCheckpoint = currentCheckpoint + 1
         if currentCheckpoint > #jsonFiles then
             -- All checkpoints completed
-            if loopingEnabled then
-                -- Loop kembali dari awal
+            if autoRespawnEnabled then
+                respawnPlayer()
+                task.wait(3) -- Wait for respawn
+                
+                if loopingEnabled then
+                    Rayfield:Notify({
+                        Title = "Auto Walk",
+                        Content = "Respawned! Looping dari awal...",
+                        Duration = 3,
+                        Image = "repeat"
+                    })
+                    task.wait(1)
+                    startAutoWalkSequence()
+                else
+                    autoLoopEnabled = false
+                    Rayfield:Notify({
+                        Title = "Auto Walk",
+                        Content = "Auto walk selesai setelah respawn!",
+                        Duration = 3,
+                        Image = "check-check"
+                    })
+                end
+            elseif loopingEnabled then
                 Rayfield:Notify({
                     Title = "Auto Walk",
                     Content = "Semua checkpoint selesai! Looping dari awal...",
@@ -765,7 +877,7 @@ local function startAutoWalkSequence()
         if not ok then
             Rayfield:Notify({
                 Title = "Error",
-                Content = "Failed to download: ",
+                Content = "Failed to download checkpoint",
                 Duration = 5,
                 Image = "ban"
             })
@@ -775,12 +887,14 @@ local function startAutoWalkSequence()
 
         local data = loadCheckpoint(checkpointFile)
         if data and #data > 0 then
-            Rayfield:Notify({
-                Title = "Auto Walk (Automatic)",
-                Content = "Auto walk berhasil di jalankan",
-                Duration = 2,
-                Image = "bot"
-            })
+            if currentCheckpoint == 1 then
+                Rayfield:Notify({
+                    Title = "Auto Walk (Automatic)",
+                    Content = "Auto walk berhasil di jalankan",
+                    Duration = 2,
+                    Image = "bot"
+                })
+            end
             task.wait(0.5)
             startPlayback(data, playNext)
         else
@@ -809,8 +923,31 @@ local function startManualAutoWalkSequence(startCheckpoint)
         currentCheckpoint = currentCheckpoint + 1
         if currentCheckpoint > #jsonFiles then
             -- All checkpoints completed
-            if loopingEnabled then
-                -- Loop kembali dari (checkpoint 1)
+            if autoRespawnEnabled then
+                respawnPlayer()
+                task.wait(3)
+                
+                if loopingEnabled then
+                    Rayfield:Notify({
+                        Title = "Auto Walk (Manual)",
+                        Content = "Respawned! Looping dari checkpoint 1...",
+                        Duration = 3,
+                        Image = "repeat"
+                    })
+                    task.wait(1)
+                    currentCheckpoint = 0
+                    playNext()
+                else
+                    autoLoopEnabled = false
+                    isManualMode = false
+                    Rayfield:Notify({
+                        Title = "Auto Walk (Manual)",
+                        Content = "Auto walk selesai setelah respawn!",
+                        Duration = 2,
+                        Image = "check-check"
+                    })
+                end
+            elseif loopingEnabled then
                 Rayfield:Notify({
                     Title = "Auto Walk (Manual)",
                     Content = "Checkpoint terakhir selesai! Looping dari checkpoint 1...",
@@ -867,16 +1004,8 @@ local function startManualAutoWalkSequence(startCheckpoint)
     playNext()
 end
 
--- Function to rotate a single checkpoint (manual)
+-- NEW: Modified function to play single checkpoint with area check and walk to start
 local function playSingleCheckpointFile(fileName, checkpointIndex)
-    if loopingEnabled then
-        -- Jika looping aktif, gunakan mode manual sequence
-        stopPlayback()
-        startManualAutoWalkSequence(checkpointIndex)
-        return
-    end
-    
-    -- Mode normal tanpa looping
     autoLoopEnabled = false
     isManualMode = false
     stopPlayback()
@@ -885,7 +1014,7 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
     if not ok then
         Rayfield:Notify({
             Title = "Error",
-            Content = "Failed to ensure",
+            Content = "Failed to download checkpoint",
             Duration = 4,
             Image = "ban"
         })
@@ -896,27 +1025,72 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
     if not data or #data == 0 then
         Rayfield:Notify({
             Title = "Error",
-            Content = "File invalid",
+            Content = "File invalid atau kosong",
             Duration = 4,
             Image = "ban"
         })
         return
     end
     
-    Rayfield:Notify({
-        Title = "Auto Walk (Manual)",
-        Content = "Auto walk berhasil di jalankan",
-        Duration = 3,
-        Image = "bot"
-    })
+    -- Check if area check is enabled
+    if areaCheckEnabled then
+        -- Check if player is near checkpoint
+        local isNear, distance = isPlayerNearCheckpoint(data)
+        
+        if not isNear then
+            Rayfield:Notify({
+                Title = "Area Check Failed",
+                Content = string.format("Terlalu jauh dari checkpoint! Jarak: %.1fm (Max: %dm)", distance, maxDistanceToCheckpoint),
+                Duration = 5,
+                Image = "alert-triangle"
+            })
+            return
+        end
+    end
     
-    startPlayback(data, function()
-        Rayfield:Notify({
-            Title = "Auto Walk (Manual)",
-            Content = "Auto walk selesai!",
-            Duration = 2,
-            Image = "check-check"
-        })
+    -- Walk to starting point first
+    local startPos = tableToVec(data[1].position)
+    walkToStartingPoint(startPos, function(success)
+        if not success then
+            Rayfield:Notify({
+                Title = "Error",
+                Content = "Gagal berjalan ke titik awal",
+                Duration = 3,
+                Image = "ban"
+            })
+            return
+        end
+        
+        -- Start auto walk after reaching start point
+        if loopingEnabled then
+            startManualAutoWalkSequence(checkpointIndex)
+        else
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = "Auto walk berhasil di jalankan",
+                Duration = 3,
+                Image = "bot"
+            })
+            
+            startPlayback(data, function()
+                if autoRespawnEnabled then
+                    respawnPlayer()
+                    Rayfield:Notify({
+                        Title = "Auto Walk (Manual)",
+                        Content = "Auto walk selesai! Respawning...",
+                        Duration = 2,
+                        Image = "check-check"
+                    })
+                else
+                    Rayfield:Notify({
+                        Title = "Auto Walk (Manual)",
+                        Content = "Auto walk selesai!",
+                        Duration = 2,
+                        Image = "check-check"
+                    })
+                end
+            end)
+        end
     end)
 end
 
@@ -931,10 +1105,11 @@ end)
 
 -------------------------------------------------------------
 
--------------------------------------------------------------
-
 -----| MENU 1 > AUTO WALK SETTINGS |-----
 local Section = AutoWalkTab:CreateSection("Auto Walk (Settings)")
+
+-- NEW: Slider untuk mengatur jarak area check
+local maxDistanceToCheckpoint = 50
 
 -- Button Pause
 local PauseButton = AutoWalkTab:CreateButton({
@@ -1011,21 +1186,12 @@ local SpeedSlider = AutoWalkTab:CreateSlider({
     CurrentValue = 1,
     Callback = function(Value)
         playbackSpeed = Value
-
-        local speedText = "Normal"
-        if Value < 1.0 then
-            speedText = "Lambat (" .. string.format("%.1f", Value) .. "x)"
-        elseif Value > 1.0 then
-            speedText = "Cepat (" .. string.format("%.1f", Value) .. "x)"
-        else
-            speedText = "Normal (" .. Value .. "x)"
-        end
     end,
 })
 -------------------------------------------------------------
 
------| MENU 1.5 > AUTO WALK LOOPING |-----
-local Section = AutoWalkTab:CreateSection("Auto Walk (Looping)")
+-----| MENU 1.5 > AUTO WALK LOOPING & RESPAWN |-----
+local Section = AutoWalkTab:CreateSection("Auto Walk (Looping & Respawn)")
 
 local LoopingToggle = AutoWalkTab:CreateToggle({
    Name = "🔄 Enable Looping",
@@ -1043,6 +1209,30 @@ local LoopingToggle = AutoWalkTab:CreateToggle({
            Rayfield:Notify({
                Title = "Looping",
                Content = "Fitur looping dinonaktifkan!",
+               Duration = 3,
+               Image = "x"
+           })
+       end
+   end,
+})
+
+-- NEW: Auto Respawn Toggle
+local AutoRespawnToggle = AutoWalkTab:CreateToggle({
+   Name = "♻️ Auto Respawn",
+   CurrentValue = false,
+   Callback = function(Value)
+       autoRespawnEnabled = Value
+       if Value then
+           Rayfield:Notify({
+               Title = "Auto Respawn",
+               Content = "Auto respawn diaktifkan! Player akan respawn otomatis setelah selesai.",
+               Duration = 4,
+               Image = "refresh-cw"
+           })
+       else
+           Rayfield:Notify({
+               Title = "Auto Respawn",
+               Content = "Auto respawn dinonaktifkan!",
                Duration = 3,
                Image = "x"
            })
@@ -1077,7 +1267,7 @@ local AutoToggle = AutoWalkTab:CreateToggle({
 local Section = AutoWalkTab:CreateSection("Auto Walk (Manual)")
 
 -- Toggle Auto Walk (Spawnpoint)
-local CP1Toggle = AutoWalkTab:CreateToggle({
+local CP0Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Spawnpoint)",
     CurrentValue = false,
     Callback = function(Value)
@@ -1152,7 +1342,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
 })
 
 -- Toggle Auto Walk (Checkpoint 5)
-local CP4Toggle = AutoWalkTab:CreateToggle({
+local CP5Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Checkpoint 5)",
     CurrentValue = false,
     Callback = function(Value)
