@@ -357,7 +357,7 @@ player.CharacterAdded:Connect(function(newChar)
 end)
 
 -- Section
-local Section = AutoWalkTab:CreateSection("List Bypass")
+local Section = BypassTab:CreateSection("List Bypass")
 
 -- Toggle
 local AntiAFKToggle = BypassTab:CreateToggle({
