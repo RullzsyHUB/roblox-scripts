@@ -1144,7 +1144,7 @@ local ResumeButton = AutoWalkTab:CreateButton({
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
     Name = "⚡ Speed Auto Walk",
-    Range = {0.5, 10},
+    Range = {0.5, 4},
     Increment = 0.01,
     Suffix = "x Speed",
     CurrentValue = 1,
@@ -1729,5 +1729,6 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
 
 
