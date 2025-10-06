@@ -39,8 +39,8 @@ local ReleasedScripts = {
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
     },
     {
-        Name = "MOUNT RAVIKA",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20RAVIKA/main.lua",
+        Name = "MOUNT YUKARI",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YUKARI/main.lua",
     },
 }
 
