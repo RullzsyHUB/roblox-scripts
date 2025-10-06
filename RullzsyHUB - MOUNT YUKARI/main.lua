@@ -1160,7 +1160,7 @@ local CP1Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("spawnpoint.json", 1)
+            moveToCheckpointIfInRange("spawnpoint.json", 1)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1175,7 +1175,7 @@ local CP1Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_1.json", 2)
+            moveToCheckpointIfInRange("checkpoint_1.json", 2)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1190,7 +1190,7 @@ local CP2Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_2.json", 3)
+            moveToCheckpointIfInRange("checkpoint_2.json", 3)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1205,7 +1205,7 @@ local CP3Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_3.json", 4)
+            moveToCheckpointIfInRange("checkpoint_3.json", 4)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1220,7 +1220,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_4.json", 5)
+            moveToCheckpointIfInRange("checkpoint_4.json", 5)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1235,7 +1235,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_5.json", 6)
+            moveToCheckpointIfInRange("checkpoint_5.json", 6)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1251,7 +1251,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_6.json", 7)
+            moveToCheckpointIfInRange("checkpoint_6.json", 7)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1267,7 +1267,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_7.json", 8)
+            moveToCheckpointIfInRange("checkpoint_7.json", 8)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1701,3 +1701,4 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -- CREDITS - END
 
 -------------------------------------------------------------
+
