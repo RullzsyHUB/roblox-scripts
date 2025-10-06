@@ -337,8 +337,8 @@ local lastFootstepTime = 0
 local footstepInterval = 0.35
 local leftFootstep = true
 
--- FIXED: Area Check Variables (Set to 30 meters by default)
-local maxDistanceToCheckpoint = 30 -- Jarak maksimal 30 meter untuk memulai checkpoint
+-- FIXED: Area Check Variables
+local maxDistanceToCheckpoint = 30
 local autoRespawnEnabled = false
 -------------------------------------------------------------
 
