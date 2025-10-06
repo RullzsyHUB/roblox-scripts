@@ -1004,8 +1004,56 @@ local function startManualAutoWalkSequence(startCheckpoint)
     playNext()
 end
 
--- NEW: Modified function to play single checkpoint with area check and walk to start
--- UPDATED: Function to play single checkpoint file
+-- Fungsi untuk membuat karakter berjalan otomatis menuju titik
+function walkToStartingPoint(targetPos, onReached)
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hum = char:WaitForChild("Humanoid")
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    -- Hentikan dulu semua gerakan sebelumnya
+    hum:Move(Vector3.zero)
+    walkingToPoint = true
+
+    -- Pastikan pathfinding aktif
+    local pathService = game:GetService("PathfindingService")
+    local path = pathService:CreatePath({
+        AgentRadius = 2,
+        AgentHeight = 5,
+        AgentCanJump = true,
+        AgentJumpHeight = 7,
+        AgentMaxSlope = 45,
+    })
+
+    path:ComputeAsync(hrp.Position, targetPos)
+
+    if path.Status == Enum.PathStatus.Success then
+        local waypoints = path:GetWaypoints()
+
+        for _, waypoint in ipairs(waypoints) do
+            if not walkingToPoint then
+                if onReached then onReached(false) end
+                return
+            end
+
+            hum:MoveTo(waypoint.Position)
+            hum.MoveToFinished:Wait()
+
+            -- Jika waypoint butuh lompat
+            if waypoint.Action == Enum.PathWaypointAction.Jump then
+                hum.Jump = true
+            end
+        end
+
+        walkingToPoint = false
+        if onReached then onReached(true) end
+    else
+        walkingToPoint = false
+        if onReached then onReached(false) end
+    end
+end
+
+-- ✅ FINAL: Function to play single checkpoint file
 local function playSingleCheckpointFile(fileName, checkpointIndex)
     autoLoopEnabled = false
     isManualMode = false
@@ -1013,39 +1061,28 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
     
     local ok = EnsureJsonFile(fileName)
     if not ok then
-        Rayfield:Notify({
-            Title = "Error",
-            Content = "Failed to download checkpoint",
-            Duration = 4,
-            Image = "ban"
-        })
+        Rayfield:Notify({Title="Error",Content="Failed to download checkpoint",Duration=4,Image="ban"})
         return
     end
     
     local data = loadCheckpoint(fileName)
     if not data or #data == 0 then
-        Rayfield:Notify({
-            Title = "Error",
-            Content = "File invalid atau kosong",
-            Duration = 4,
-            Image = "ban"
-        })
+        Rayfield:Notify({Title="Error",Content="File invalid atau kosong",Duration=4,Image="ban"})
         return
     end
 
     local startPos = tableToVec(data[1].position)
     local isNear, distance = isPlayerNearCheckpoint(data)
 
-    -- ✅ Jika terlalu jauh dari checkpoint, maka player akan jalan otomatis ke titik awal
+    -- ✅ Jika terlalu jauh, jalan dulu ke checkpoint awal
     if areaCheckEnabled and not isNear then
         Rayfield:Notify({
             Title = "Auto Walk",
-            Content = string.format("Menuju ke titik checkpoint (%.1fm jauhnya)...", distance),
+            Content = string.format("Menuju ke checkpoint (%.1fm jauhnya)...", distance),
             Duration = 4,
             Image = "map-pin"
         })
 
-        -- Mulai jalan otomatis ke posisi start checkpoint
         walkToStartingPoint(startPos, function(success)
             if not success then
                 Rayfield:Notify({
@@ -1057,7 +1094,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
                 return
             end
 
-            -- ✅ Setelah sampai baru mulai playback
             Rayfield:Notify({
                 Title = "Auto Walk",
                 Content = "Tiba di titik checkpoint. Memulai auto walk...",
@@ -1084,18 +1120,10 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
                 end
             end)
         end)
-
         return
     end
 
-    -- ✅ Jika sudah dekat, langsung mulai playback tanpa jalan
-    Rayfield:Notify({
-        Title = "Auto Walk",
-        Content = "Memulai auto walk...",
-        Duration = 2,
-        Image = "bot"
-    })
-
+    -- ✅ Kalau sudah dekat langsung play
     startPlayback(data, function()
         if autoRespawnEnabled and fileName == "checkpoint_5.json" then
             respawnPlayer()
@@ -1115,7 +1143,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         end
     end)
 end
-
 
 -- Event listener when the player respawns
 player.CharacterAdded:Connect(function(newChar)
@@ -1803,3 +1830,4 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
