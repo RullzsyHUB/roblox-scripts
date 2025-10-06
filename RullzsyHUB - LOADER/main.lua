@@ -30,14 +30,6 @@ local ReleasedScripts = {
         Name = "MOUNT YNTKTS",
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YNTKTS/main.lua",
     },
-    {
-        Name = "MOUNT YAHAYUK",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
-    },
-    {
-        Name = "MOUNT ARUNIKA",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ARUNIKA/main.lua",
-    },
 }
 
 for _, script in ipairs(ReleasedScripts) do
@@ -49,94 +41,13 @@ for _, script in ipairs(ReleasedScripts) do
                 Content = "Loading " .. script.Name .. " Script...",
                 Duration = 2,
                 Image = 4483362458,
-                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
+                Actions = {
+                    Ignore = { Name = "Okay!", Callback = function() end }
+                },
             })
 
             task.wait(0.5)
             Rayfield:Destroy()
 
             -- Jalankan Script
-            loadstring(game:HttpGet(script.URL))()
-        end,
-    })
-end
-
--- =========================================================== =
--- 🟠 SCRIPT DALAM TAHAP UPDATE
--- =========================================================== =
-local UpdatingScripts = {
-    "MOUNT STECU",
-}
-
-for _, name in ipairs(UpdatingScripts) do
-    MainTab:CreateButton({
-        Name = "🟠 SCRIPT " .. name,
-        Callback = function()
-            Rayfield:Notify({
-                Title = "Script Sedang Diperbarui",
-                Content = "Script " .. name .. " sedang dalam tahap update.\nMohon tunggu versi terbarunya dirilis.",
-                Duration = 3,
-                Image = 4483362458,
-                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
-            })
-        end,
-    })
-end
-
--- =========================================================== =
--- 🔴 SCRIPT BELUM RILIS
--- =========================================================== =
-local UnreleasedScripts = {
-    "MOUNT LEMBAYANA",
-    "MOUNT DAUN",
-    "MOUNT RAVIKA",
-    "ANTARTIKA EXPEDITION",
-    "MOUNT SAKAHAYANG",
-    "MOUNT HANA",
-    "MOUNT CKPTW",
-    "MOUNT KALISTA",
-}
-
-for _, name in ipairs(UnreleasedScripts) do
-    MainTab:CreateButton({
-        Name = "🔴 SCRIPT " .. name,
-        Callback = function()
-            Rayfield:Notify({
-                Title = "Script Belum Rilis",
-                Content = "Script " .. name .. " belum tersedia.",
-                Duration = 3,
-                Image = 4483362458,
-                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
-            })
-        end,
-    })
-end
-
--- =========================================================== =
--- INFO SECTION
--- =========================================================== =
-MainTab:CreateSection("Information")
-
-MainTab:CreateParagraph({
-    Title = "📌 Panduan Penggunaan",
-    Content = table.concat({
-        "Silakan pilih salah satu script yang tersedia di atas untuk digunakan.",
-        "",
-        "🟢 = Script sudah rilis & bisa dijalankan.",
-        "🟠 = Script sedang dalam tahap update (belum bisa dijalankan).",
-        "🔴 = Script belum rilis (coming soon)."
-    }, "\n")
-})
-
--- =========================================================== =
--- NOTIFIKASI SAAT LOAD
--- =========================================================== =
-Rayfield:Notify({
-    Title = "RullzsyHUB Loader!",
-    Content = "Selamat datang! Silahkan pilih salah satu menu di atas.",
-    Duration = 5,
-    Image = 4483362458,
-    Actions = {
-        Ignore = { Name = "Got it!", Callback = function() end },
-    },
-})
+           
