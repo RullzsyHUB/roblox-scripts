@@ -41,9 +41,7 @@ for _, script in ipairs(ReleasedScripts) do
                 Content = "Loading " .. script.Name .. " Script...",
                 Duration = 2,
                 Image = 4483362458,
-                Actions = {
-                    Ignore = { Name = "Okay!", Callback = function() end },
-                },
+                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
             })
 
             task.wait(0.5)
@@ -73,9 +71,7 @@ for _, name in ipairs(UpdatingScripts) do
                 Content = "Script " .. name .. " sedang dalam tahap update / maintenance.\nUntuk sementara tidak dapat diakses.",
                 Duration = 3,
                 Image = 4483362458,
-                Actions = {
-                    Ignore = { Name = "Okay!", Callback = function() end },
-                },
+                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
             })
         end,
     })
@@ -104,9 +100,7 @@ for _, name in ipairs(UnreleasedScripts) do
                 Content = "Script " .. name .. " belum tersedia.",
                 Duration = 3,
                 Image = 4483362458,
-                Actions = {
-                    Ignore = { Name = "Okay!", Callback = function() end },
-                },
+                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
             })
         end,
     })
@@ -123,7 +117,7 @@ MainTab:CreateParagraph({
         "Silakan pilih salah satu script yang tersedia di atas untuk digunakan.",
         "",
         "🟢 = Script sudah rilis & bisa dijalankan.",
-        "🟠 = Script sedang dalam tahap update / maintenance.",
+        "🟠 = Script sedang dalam tahap update / maintenance (tidak bisa dijalankan).",
         "🔴 = Script belum rilis (coming soon)."
     }, "\n")
 })
