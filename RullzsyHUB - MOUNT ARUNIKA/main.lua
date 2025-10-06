@@ -1005,6 +1005,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
 end
 
 -- NEW: Modified function to play single checkpoint with area check and walk to start
+-- UPDATED: Function to play single checkpoint file
 local function playSingleCheckpointFile(fileName, checkpointIndex)
     autoLoopEnabled = false
     isManualMode = false
@@ -1031,63 +1032,90 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         })
         return
     end
-    
-    if areaCheckEnabled then
-        local isNear, distance = isPlayerNearCheckpoint(data)
-        if not isNear then
-            Rayfield:Notify({
-                Title = "Area Check Failed",
-                Content = string.format("Terlalu jauh dari checkpoint! Jarak: %.1fm (Max: %dm)", distance, maxDistanceToCheckpoint),
-                Duration = 5,
-                Image = "alert-triangle"
-            })
-            return
-        end
-    end
-    
+
     local startPos = tableToVec(data[1].position)
-    walkToStartingPoint(startPos, function(success)
-        if not success then
+    local isNear, distance = isPlayerNearCheckpoint(data)
+
+    -- ✅ Jika terlalu jauh dari checkpoint, maka player akan jalan otomatis ke titik awal
+    if areaCheckEnabled and not isNear then
+        Rayfield:Notify({
+            Title = "Auto Walk",
+            Content = string.format("Menuju ke titik checkpoint (%.1fm jauhnya)...", distance),
+            Duration = 4,
+            Image = "map-pin"
+        })
+
+        -- Mulai jalan otomatis ke posisi start checkpoint
+        walkToStartingPoint(startPos, function(success)
+            if not success then
+                Rayfield:Notify({
+                    Title = "Auto Walk",
+                    Content = "Gagal berjalan ke titik awal checkpoint!",
+                    Duration = 3,
+                    Image = "ban"
+                })
+                return
+            end
+
+            -- ✅ Setelah sampai baru mulai playback
             Rayfield:Notify({
-                Title = "Error",
-                Content = "Gagal berjalan ke titik awal",
-                Duration = 3,
-                Image = "ban"
+                Title = "Auto Walk",
+                Content = "Tiba di titik checkpoint. Memulai auto walk...",
+                Duration = 2,
+                Image = "check"
             })
-            return
-        end
-        
-        if loopingEnabled then
-            startManualAutoWalkSequence(checkpointIndex)
-        else
-            Rayfield:Notify({
-                Title = "Auto Walk (Manual)",
-                Content = "Auto walk berhasil dijalankan",
-                Duration = 3,
-                Image = "bot"
-            })
-            
+
             startPlayback(data, function()
                 if autoRespawnEnabled and fileName == "checkpoint_5.json" then
                     respawnPlayer()
                     Rayfield:Notify({
-                        Title = "Auto Walk (Manual)",
+                        Title = "Auto Walk",
                         Content = "Auto walk selesai! Respawning...",
                         Duration = 2,
-                        Image = "check-check"
+                        Image = "refresh-cw"
                     })
                 else
                     Rayfield:Notify({
-                        Title = "Auto Walk (Manual)",
+                        Title = "Auto Walk",
                         Content = "Auto walk selesai!",
                         Duration = 2,
                         Image = "check-check"
                     })
                 end
             end)
+        end)
+
+        return
+    end
+
+    -- ✅ Jika sudah dekat, langsung mulai playback tanpa jalan
+    Rayfield:Notify({
+        Title = "Auto Walk",
+        Content = "Memulai auto walk...",
+        Duration = 2,
+        Image = "bot"
+    })
+
+    startPlayback(data, function()
+        if autoRespawnEnabled and fileName == "checkpoint_5.json" then
+            respawnPlayer()
+            Rayfield:Notify({
+                Title = "Auto Walk",
+                Content = "Auto walk selesai! Respawning...",
+                Duration = 2,
+                Image = "refresh-cw"
+            })
+        else
+            Rayfield:Notify({
+                Title = "Auto Walk",
+                Content = "Auto walk selesai!",
+                Duration = 2,
+                Image = "check-check"
+            })
         end
     end)
 end
+
 
 -- Event listener when the player respawns
 player.CharacterAdded:Connect(function(newChar)
