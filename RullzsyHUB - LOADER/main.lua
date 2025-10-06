@@ -33,7 +33,7 @@ MainTab:CreateParagraph({
 })
 
 MainTab:CreateButton({
-    Name = "🚀 RUN BYPASS PRIVATE SERVER",
+    Name = "🛡️ RUN BYPASS PRIVATE SERVER",
     Callback = function()
         Rayfield:Notify({
             Title = "Bypass Private Server",
