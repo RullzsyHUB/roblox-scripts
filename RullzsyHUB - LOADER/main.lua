@@ -34,6 +34,10 @@ local ReleasedScripts = {
         Name = "MOUNT ARUNIKA",
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ARUNIKA/main.lua",
     },
+    {
+        Name = "MOUNT YAHAYUK",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
+    },
 }
 
 for _, script in ipairs(ReleasedScripts) do
@@ -61,7 +65,6 @@ end
 -- 🟠 SCRIPT DALAM TAHAP UPDATE / MAINTENANCE
 -- =========================================================== =
 local UpdatingScripts = {
-    "MOUNT YAHAYUK",
     "MOUNT STECU",
 }
 
