@@ -869,26 +869,16 @@ local function startManualAutoWalkSequence(startCheckpoint)
     playNext()
 end
 
-
-local function isPlayerNearCheckpoint(data)
-    local player = game.Players.LocalPlayer
-    local char = player.Character or player.CharacterAdded:Wait()
-    local hrp = char:WaitForChild("HumanoidRootPart")
-
-    local checkpointPos = tableToVec(data[1].position)
-    local distance = (hrp.Position - checkpointPos).Magnitude
-    return (distance <= maxDistanceToCheckpoint), distance
-end
-
--- Fungsi: jalan otomatis ke posisi tertentu (bukan teleport)
+-- Fungsi untuk membuat karakter berjalan otomatis menuju titik
+-- Fungsi untuk berjalan otomatis (Pathfinding)
 function walkToStartingPoint(targetPos, onReached)
     local player = game.Players.LocalPlayer
     local char = player.Character or player.CharacterAdded:Wait()
     local hum = char:WaitForChild("Humanoid")
     local hrp = char:WaitForChild("HumanoidRootPart")
 
-    walkingToPoint = true
     hum:Move(Vector3.zero)
+    walkingToPoint = true
 
     local pathService = game:GetService("PathfindingService")
     local path = pathService:CreatePath({
@@ -908,12 +898,14 @@ function walkToStartingPoint(targetPos, onReached)
                 if onReached then onReached(false) end
                 return
             end
+
             hum:MoveTo(waypoint.Position)
             hum.MoveToFinished:Wait()
             if waypoint.Action == Enum.PathWaypointAction.Jump then
                 hum.Jump = true
             end
         end
+
         walkingToPoint = false
         if onReached then onReached(true) end
     else
@@ -922,7 +914,7 @@ function walkToStartingPoint(targetPos, onReached)
     end
 end
 
--- ✅ Fungsi utama: jalan otomatis ke checkpoint dan mulai playback
+-- ✅ Fungsi versi JALAN (bukan teleport)
 local function moveToCheckpointIfInRange(fileName, checkpointIndex)
     autoLoopEnabled = false
     isManualMode = false
@@ -930,20 +922,30 @@ local function moveToCheckpointIfInRange(fileName, checkpointIndex)
     
     local ok = EnsureJsonFile(fileName)
     if not ok then
-        Rayfield:Notify({Title="Error",Content="Gagal memuat checkpoint",Duration=3,Image="ban"})
+        Rayfield:Notify({
+            Title = "Error",
+            Content = "Gagal memuat checkpoint",
+            Duration = 3,
+            Image = "ban"
+        })
         return
     end
 
     local data = loadCheckpoint(fileName)
     if not data or #data == 0 then
-        Rayfield:Notify({Title="Error",Content="File checkpoint kosong / rusak",Duration=3,Image="ban"})
+        Rayfield:Notify({
+            Title = "Error",
+            Content = "File checkpoint kosong / rusak",
+            Duration = 3,
+            Image = "ban"
+        })
         return
     end
 
     local startPos = tableToVec(data[1].position)
     local isNear, distance = isPlayerNearCheckpoint(data)
 
-    -- Jika pemain sudah dalam area checkpoint, maka jalan otomatis
+    -- ✅ Jika dalam area (<= maxDistanceToCheckpoint), maka jalan otomatis ke titik JSON
     if areaCheckEnabled and isNear then
         Rayfield:Notify({
             Title = "Auto Walk",
@@ -988,7 +990,9 @@ local function moveToCheckpointIfInRange(fileName, checkpointIndex)
                 })
             end
         end)
+
     else
+        -- Jika belum dalam area, beri notifikasi saja
         Rayfield:Notify({
             Title = "Auto Walk",
             Content = string.format("Kamu terlalu jauh (%.1fm)! Dekati area checkpoint dulu.", distance),
@@ -1699,6 +1703,4 @@ CreditsTab:CreateLabel("UI: Rayfield Interface")
 CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
-
 -------------------------------------------------------------
-
