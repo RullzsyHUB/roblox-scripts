@@ -38,6 +38,10 @@ local ReleasedScripts = {
         Name = "MOUNT YAHAYUK",
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
     },
+    {
+        Name = "MOUNT RAVIKA",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20RAVIKA/main.lua",
+    },
 }
 
 for _, script in ipairs(ReleasedScripts) do
