@@ -84,7 +84,7 @@ end
 -- API
 -------------------------------------------------------------
 local API_CONFIG = {
-    base_url = "https://monotonal-unhoneyed-rita.ngrok-free.dev",
+    base_url = "https://rullzsyhub.my.id/",
     validate_endpoint = "/validate.php",
     main_script_url = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20LOADER/main.lua"
 }
