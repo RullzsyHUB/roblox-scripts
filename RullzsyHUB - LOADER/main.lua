@@ -52,7 +52,7 @@ MainTab:CreateButton({
 -- =========================================================== =
 -- 🟢 SCRIPT SUDAH RILIS (MAP BIASA)
 -- =========================================================== =
-MainTab:CreateSection("🟢 Script Rilis (Map Biasa)")
+MainTab:CreateSection("🟢 Script Rilis")
 
 local ReleasedScripts = {
     {
@@ -97,9 +97,9 @@ for _, script in ipairs(ReleasedScripts) do
 end
 
 -- =========================================================== =
--- 🧭 MAP KHUSUS: MOUNT YAHAYUK
+-- MOUNT YAHAYUK
 -- =========================================================== =
-MainTab:CreateSection("🧭 MAP KHUSUS: MOUNT YAHAYUK")
+MainTab:CreateSection("🟢 Script Rilis (Yahayuk)")
 
 local YahyaScripts = {
     {
@@ -168,8 +168,7 @@ MainTab:CreateParagraph({
         "Silakan pilih salah satu script yang tersedia di atas untuk digunakan.",
         "",
         "🟢 = Script sudah rilis & bisa dijalankan.",
-        "🟠 = Script sedang dalam tahap update / maintenance (tidak bisa dijalankan).",
-        "🧭 = Map khusus yang memiliki versi berbeda (seperti MOUNT YAHAYUK)."
+        "🟠 = Script sedang dalam tahap update / maintenance (tidak bisa dijalankan)."
     }, "\n")
 })
 
