@@ -50,52 +50,85 @@ MainTab:CreateButton({
 })
 
 -- =========================================================== =
--- TAB: LIST SCRIPT
+-- 🟢 SCRIPT SUDAH RILIS (MAP BIASA)
 -- =========================================================== =
-MainTab:CreateSection("Scripts Tersedia")
+MainTab:CreateSection("🟢 Script Rilis")
 
--- =========================================================== =
--- 🟢 SCRIPT SUDAH RILIS
--- =========================================================== =
 local ReleasedScripts = {
     {
         Name = "MOUNT ATIN",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ATIN/main.lua"
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ATIN/main.lua",
     },
     {
         Name = "MOUNT YNTKTS",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YNTKTS/main.lua"
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YNTKTS/main.lua",
     },
     {
         Name = "MOUNT ARUNIKA",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ARUNIKA/main.lua"
-    },
-    {
-        Name = "MOUNT YAHAYUK V1",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main_v1.lua"
-    },
-    {
-        Name = "MOUNT YAHAYUK V2",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main_v2.lua"
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ARUNIKA/main.lua",
     },
     {
         Name = "MOUNT YUKARI",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YUKARI/main.lua"
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YUKARI/main.lua",
     },
     {
         Name = "MOUNT PENGANGGURAN",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20PENGANGGURAN/main.lua"
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20PENGANGGURAN/main.lua",
     },
 }
 
 for _, script in ipairs(ReleasedScripts) do
     MainTab:CreateButton({
-        Name = "🟢 SCRIPT " .. script.Name,
+        Name = "🟢 " .. script.Name,
         Callback = function()
             Rayfield:Notify({
                 Title = "Executing Script",
                 Content = "Loading " .. script.Name .. " Script...",
-                Duration = 2,
+                Duration = 4,
+                Image = 4483362458,
+                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
+            })
+
+            task.wait(0.5)
+            Rayfield:Destroy()
+            loadstring(game:HttpGet(script.URL))()
+        end,
+    })
+end
+
+-- =========================================================== =
+-- 🧭 MAP KHUSUS: MOUNT YAHAYUK
+-- =========================================================== =
+MainTab:CreateSection("🟢 Script Rilis (Yahayuk)")
+
+MainTab:CreateParagraph({
+    Title = "💡 Keterangan",
+    Content = table.concat({
+        "Pada mount yahayuk dirasa checkpoint pada v1 berbeda silahkan gunakan v2, jika v2 masih tetep berbeda, silahkan untuk report.",
+    }, "\n")
+})
+
+local YahyaScripts = {
+    {
+        Name = "MOUNT YAHAYUK V1 🟢",
+        Description = "Gunakan versi ini terlebih dahulu. Jika posisi atau checkpoint terasa tidak sesuai dengan map yang kamu mainkan, coba gunakan versi V2 di bawah.",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main_v1.lua",
+    },
+    {
+        Name = "MOUNT YAHAYUK V2 🟢",
+        Description = "Alternatif versi untuk map dengan penempatan checkpoint yang berbeda dari V1.",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main_v2.lua",
+    },
+}
+
+for _, script in ipairs(YahyaScripts) do
+    MainTab:CreateButton({
+        Name = script.Name,
+        Callback = function()
+            Rayfield:Notify({
+                Title = "Executing Script",
+                Content = script.Description,
+                Duration = 5,
                 Image = 4483362458,
                 Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
             })
@@ -110,6 +143,8 @@ end
 -- =========================================================== =
 -- 🟠 SCRIPT DALAM TAHAP UPDATE / MAINTENANCE
 -- =========================================================== =
+MainTab:CreateSection("🟠 Script Dalam Update / Maintenance")
+
 local UpdatingScripts = {
     "MOUNT STECU",
 }
@@ -130,35 +165,6 @@ for _, name in ipairs(UpdatingScripts) do
 end
 
 -- =========================================================== =
--- 🔴 SCRIPT BELUM RILIS
--- =========================================================== =
-local UnreleasedScripts = {
-    "MOUNT LEMBAYANA",
-    "MOUNT DAUN",
-    "MOUNT RAVIKA",
-    "ANTARTIKA EXPEDITION",
-    "MOUNT SAKAHAYANG",
-    "MOUNT HANA",
-    "MOUNT CKPTW",
-    "MOUNT KALISTA",
-}
-
-for _, name in ipairs(UnreleasedScripts) do
-    MainTab:CreateButton({
-        Name = "🔴 SCRIPT " .. name,
-        Callback = function()
-            Rayfield:Notify({
-                Title = "Script Belum Rilis",
-                Content = "Script " .. name .. " belum tersedia.",
-                Duration = 3,
-                Image = 4483362458,
-                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
-            })
-        end,
-    })
-end
-
--- =========================================================== =
 -- INFO SECTION
 -- =========================================================== =
 MainTab:CreateSection("Information")
@@ -170,7 +176,7 @@ MainTab:CreateParagraph({
         "",
         "🟢 = Script sudah rilis & bisa dijalankan.",
         "🟠 = Script sedang dalam tahap update / maintenance (tidak bisa dijalankan).",
-        "🔴 = Script belum rilis (coming soon)."
+        "🧭 = Map khusus yang memiliki versi berbeda (seperti MOUNT YAHAYUK)."
     }, "\n")
 })
 
