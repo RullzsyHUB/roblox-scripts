@@ -71,8 +71,12 @@ local ReleasedScripts = {
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ARUNIKA/main.lua",
     },
     {
-        Name = "MOUNT YAHAYUK",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
+        Name = "MOUNT YAHAYUK V1",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main_v1.lua",
+    },
+    {
+        Name = "MOUNT YAHAYUK V2",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main_v2.lua",
     },
     {
         Name = "MOUNT YUKARI",
