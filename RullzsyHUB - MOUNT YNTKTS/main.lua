@@ -299,7 +299,6 @@ end
 -- Server URL and JSON checkpoint file list
 local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yntkts/"
 local jsonFiles = {
-    "spawnpoint.json",
     "checkpoint_1.json",
 	"checkpoint_2.json",
 	"checkpoint_3.json",
@@ -923,7 +922,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
             if loopingEnabled then
                 Rayfield:Notify({
                     Title = "Auto Walk (Manual)",
-                    Content = "Semua checkpoint selesai! Looping dari spawnpoint...",
+                    Content = "Semua checkpoint selesai! Looping dari checkpoint 1...",
                     Duration = 3,
                     Image = "repeat"
                 })
