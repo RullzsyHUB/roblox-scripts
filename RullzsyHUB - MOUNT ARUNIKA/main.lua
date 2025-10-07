@@ -281,7 +281,7 @@ end)
 
 
 -------------------------------------------------------------
--- AUTO WALK - ENHANCED VERSION (FIXED)
+-- AUTO WALK (FIXED VERSION - NO BLACKSCREEN, SAFE RE-ENTRY)
 -------------------------------------------------------------
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
@@ -337,9 +337,16 @@ local lastFootstepTime = 0
 local footstepInterval = 0.35
 local leftFootstep = true
 
--- FIXED: Area Check Variables
-local maxDistanceToCheckpoint = 30
+-- Area Check Variables
+local maxDistanceToCheckpoint = 80
 local autoRespawnEnabled = false
+
+-- NEW: Checkpoint Re-entry Variables (FIXED)
+local checkpointTriggerCount = 0
+local maxCheckpointTriggers = 2
+local isReEnteringCheckpoint = false
+local checkpointExitDistance = 8  -- Fixed distance, no slider
+local checkpointReEntryData = nil  -- Store checkpoint data for re-entry
 -------------------------------------------------------------
 
 -----| AUTO WALK FUNCTIONS |-----
@@ -455,6 +462,134 @@ local function simulateNaturalMovement(moveDirection, velocity)
     end
 end
 
+-- FIXED: Safe checkpoint re-entry (prevents falling/blackscreen)
+local function performCheckpointReEntry(checkpointPosition, onComplete)
+    if not character or not character:FindFirstChild("HumanoidRootPart") then 
+        if onComplete then onComplete() end
+        return 
+    end
+    
+    if not humanoid then 
+        if onComplete then onComplete() end
+        return 
+    end
+    
+    isReEnteringCheckpoint = true
+    local hrp = character.HumanoidRootPart
+    local startPos = hrp.Position
+    local startCFrame = hrp.CFrame
+    
+    -- CRITICAL: Store original Y position to prevent falling
+    local safeY = startPos.Y
+    
+    -- Calculate safe exit direction (horizontal only, keep same Y)
+    local exitDirection = (Vector3.new(startPos.X, 0, startPos.Z) - Vector3.new(checkpointPosition.X, 0, checkpointPosition.Z)).Unit
+    
+    -- If too close to checkpoint, use character's look direction
+    if exitDirection.Magnitude < 0.1 then
+        local lookVector = startCFrame.LookVector
+        exitDirection = Vector3.new(lookVector.X, 0, lookVector.Z).Unit
+    end
+    
+    -- Phase 1: Exit from checkpoint (SAFE - keeping Y position)
+    local exitPos = Vector3.new(
+        checkpointPosition.X + (exitDirection.X * checkpointExitDistance),
+        safeY,  -- KEEP SAME Y TO PREVENT FALLING
+        checkpointPosition.Z + (exitDirection.Z * checkpointExitDistance)
+    )
+    
+    -- Smooth exit with Humanoid:MoveTo (safer than CFrame teleport)
+    pcall(function()
+        -- Use small steps to prevent falling
+        local steps = 15
+        for i = 1, steps do
+            if not character or not character:FindFirstChild("HumanoidRootPart") then break end
+            if not isReEnteringCheckpoint then break end
+            
+            local currentPos = hrp.Position
+            local targetPos = lerpVector(currentPos, exitPos, 0.2)
+            targetPos = Vector3.new(targetPos.X, safeY, targetPos.Z) -- Force Y position
+            
+            -- Use CFrame but keep anchored status safe
+            hrp.CFrame = CFrame.new(targetPos, targetPos + exitDirection)
+            
+            -- Also use Humanoid:MoveTo for natural movement
+            if humanoid then
+                humanoid:MoveTo(targetPos)
+            end
+            
+            task.wait(0.03)
+        end
+    end)
+    
+    task.wait(0.2) -- Short wait outside checkpoint
+    
+    -- Phase 2: Re-enter checkpoint (SAFE - keeping Y position)
+    local reentryPos = Vector3.new(checkpointPosition.X, safeY, checkpointPosition.Z)
+    
+    pcall(function()
+        local steps = 15
+        for i = 1, steps do
+            if not character or not character:FindFirstChild("HumanoidRootPart") then break end
+            if not isReEnteringCheckpoint then break end
+            
+            local currentPos = hrp.Position
+            local targetPos = lerpVector(currentPos, reentryPos, 0.2)
+            targetPos = Vector3.new(targetPos.X, safeY, targetPos.Z) -- Force Y position
+            
+            local moveDir = (reentryPos - currentPos).Unit
+            hrp.CFrame = CFrame.new(targetPos, targetPos + moveDir)
+            
+            if humanoid then
+                humanoid:MoveTo(reentryPos)
+            end
+            
+            task.wait(0.03)
+        end
+    end)
+    
+    task.wait(0.3) -- Wait to ensure checkpoint detection
+    
+    isReEnteringCheckpoint = false
+    
+    if onComplete then onComplete() end
+end
+
+-- FIXED: Checkpoint completion handler (prevents respawn loop)
+local function handleCheckpointCompletion(finalPosition, onComplete)
+    checkpointTriggerCount = checkpointTriggerCount + 1
+    
+    if checkpointTriggerCount < maxCheckpointTriggers then
+        -- Need to trigger again - perform re-entry
+        Rayfield:Notify({
+            Title = "Checkpoint",
+            Content = string.format("Menginjak checkpoint (%d/%d)...", checkpointTriggerCount, maxCheckpointTriggers),
+            Duration = 2,
+            Image = "map-pin"
+        })
+        
+        task.spawn(function()
+            performCheckpointReEntry(finalPosition, function()
+                -- After re-entry, check if we need to do it again
+                handleCheckpointCompletion(finalPosition, onComplete)
+            end)
+        end)
+    else
+        -- Checkpoint fully triggered, proceed to next
+        Rayfield:Notify({
+            Title = "Checkpoint",
+            Content = "Checkpoint berhasil dilewati! ✅",
+            Duration = 2,
+            Image = "check-circle"
+        })
+        
+        checkpointTriggerCount = 0 -- Reset for next checkpoint
+        task.wait(0.3)
+        
+        if onComplete then onComplete() end
+    end
+end
+
 -- Function to ensure the JSON file is available
 local function EnsureJsonFile(fileName)
     local savePath = jsonFolder .. "/" .. fileName
@@ -518,7 +653,7 @@ local function findSurroundingFrames(data, t)
     return i0, i1, alpha
 end
 
--- FIXED: Function to check if player is within checkpoint area
+-- Function to check if player is within checkpoint area
 local function isPlayerNearCheckpoint(checkpointData)
     if not character or not character:FindFirstChild("HumanoidRootPart") then
         return false, 999999
@@ -537,7 +672,7 @@ local function isPlayerNearCheckpoint(checkpointData)
     return distance <= maxDistanceToCheckpoint, distance
 end
 
--- FIXED: Function to respawn player
+-- Function to respawn player
 local function respawnPlayer()
     if not player or not player.Character then return end
     
@@ -573,6 +708,9 @@ local function stopPlayback()
     recordedHipHeight = nil
     hipHeightOffset = 0
     
+    -- Don't reset checkpoint trigger count here to maintain state
+    isReEnteringCheckpoint = false
+    
     if humanoid then
         humanoid.WalkSpeed = 16
     end
@@ -583,7 +721,7 @@ local function stopPlayback()
     end
 end
 
--- FIXED: FPS-independent playback with proper area check (NO teleport if too far)
+-- FIXED: FPS-independent playback with safe checkpoint re-entry
 local function startPlayback(data, onComplete)
     if not data or #data == 0 then
         warn("No data to play!")
@@ -608,7 +746,7 @@ local function startPlayback(data, onComplete)
         playbackConnection = nil
     end
 
-    -- FIXED: Only teleport to starting point if player is within allowed distance
+    -- Teleport to starting point if player is within allowed distance
     local first = data[1]
     if character and character:FindFirstChild("HumanoidRootPart") then
         local hrp = character.HumanoidRootPart
@@ -629,6 +767,7 @@ local function startPlayback(data, onComplete)
     -- FPS-INDEPENDENT PLAYBACK LOOP
     playbackConnection = RunService.Heartbeat:Connect(function(deltaTime)
         if not isPlaying then return end
+        if isReEnteringCheckpoint then return end -- Pause playback during re-entry
         
         if isPaused then
             if pauseStartTime == 0 then
@@ -671,9 +810,14 @@ local function startPlayback(data, onComplete)
                 if humanoid then
                     humanoid:Move(tableToVec(final.moveDirection or {x=0,y=0,z=0}), false)
                 end
+                
+                -- FIXED: Handle checkpoint completion with re-entry
+                stopPlayback()
+                handleCheckpointCompletion(finalPos, onComplete)
+            else
+                stopPlayback()
+                if onComplete then onComplete() end
             end
-            stopPlayback()
-            if onComplete then onComplete() end
             return
         end
         
@@ -724,7 +868,7 @@ local function startPlayback(data, onComplete)
     end)
 end
 
--- FIXED: Auto walk sequence with proper area check
+-- FIXED: Auto walk sequence (maintains state through respawn)
 local function startAutoWalkSequence()
     -- Check area before starting
     local ok = EnsureJsonFile(jsonFiles[1])
@@ -763,7 +907,7 @@ local function startAutoWalkSequence()
         if currentCheckpoint > #jsonFiles then
             if autoRespawnEnabled and currentCheckpoint - 1 == #jsonFiles then
                 respawnPlayer()
-                task.wait(3)
+                task.wait(5) -- Wait longer for respawn to complete
 
                 if loopingEnabled then
                     Rayfield:Notify({
@@ -772,7 +916,7 @@ local function startAutoWalkSequence()
                         Duration = 3,
                         Image = "repeat"
                     })
-                    task.wait(1)
+                    task.wait(2)
                     startAutoWalkSequence()
                 else
                     autoLoopEnabled = false
@@ -858,7 +1002,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
         if currentCheckpoint > #jsonFiles then
             if autoRespawnEnabled and currentCheckpoint - 1 == #jsonFiles then
                 respawnPlayer()
-                task.wait(3)
+                task.wait(5)
 
                 if loopingEnabled then
                     Rayfield:Notify({
@@ -867,7 +1011,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
                         Duration = 3,
                         Image = "repeat"
                     })
-                    task.wait(1)
+                    task.wait(2)
                     currentCheckpoint = 0
                     playNext()
                 else
@@ -938,7 +1082,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
     playNext()
 end
 
--- FIXED: Play single checkpoint with proper area check (NO teleport if too far)
+-- Play single checkpoint with proper area check
 local function playSingleCheckpointFile(fileName, checkpointIndex)
     autoLoopEnabled = false
     isManualMode = false
@@ -966,7 +1110,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         return
     end
     
-    -- FIXED: Check if player is within allowed distance
     local isNear, distance = isPlayerNearCheckpoint(data)
     if not isNear then
         Rayfield:Notify({
@@ -978,7 +1121,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         return
     end
     
-    -- If player is near, proceed with auto walk
     if loopingEnabled then
         Rayfield:Notify({
             Title = "Auto Walk (Manual)",
@@ -1016,13 +1158,20 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
     end
 end
 
--- Event listener when the player respawns
+-- FIXED: Event listener when the player respawns (maintains loop state)
 player.CharacterAdded:Connect(function(newChar)
     character = newChar
     humanoid = character:WaitForChild("Humanoid")
     humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     
-    if isPlaying then stopPlayback() end
+    -- Don't stop playback if we're in a loop and auto respawn is enabled
+    if isPlaying and not (autoLoopEnabled and loopingEnabled and autoRespawnEnabled) then
+        stopPlayback()
+    end
+    
+    -- Reset checkpoint trigger count on respawn
+    checkpointTriggerCount = 0
+    isReEnteringCheckpoint = false
 end)
 
 -------------------------------------------------------------
@@ -1107,6 +1256,7 @@ local SpeedSlider = AutoWalkTab:CreateSlider({
         playbackSpeed = Value
     end,
 })
+
 -------------------------------------------------------------
 
 -----| MENU 1.5 > AUTO WALK LOOPING & RESPAWN |-----
