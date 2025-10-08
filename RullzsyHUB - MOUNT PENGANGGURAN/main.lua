@@ -53,7 +53,7 @@ end
 -- ACCOUNT TAB
 -------------------------------------------------------------
 local API_CONFIG = {
-    base_url = "https://monotonal-unhoneyed-rita.ngrok-free.dev",
+    base_url = "https://rullzsyhub.my.id/",
     get_user_endpoint = "/get_user.php",
 }
 
@@ -1952,3 +1952,4 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
