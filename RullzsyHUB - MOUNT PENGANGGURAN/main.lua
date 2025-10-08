@@ -21,6 +21,9 @@ local AutoWalkTab = Window:CreateTab("Auto Walk", "bot")
 local RunAnimationTab = Window:CreateTab("Run Animation", "person-standing")
 local UpdateTab = Window:CreateTab("Update Script", "file")
 local CreditsTab = Window:CreateTab("Credits", "scroll-text")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 
 -------------------------------------------------------------
 -- SERVICES
@@ -28,6 +31,9 @@ local CreditsTab = Window:CreateTab("Credits", "scroll-text")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 
 -------------------------------------------------------------
 -- IMPORT
@@ -1139,77 +1145,145 @@ end)
 -----| MENU 1 > AUTO WALK SETTINGS |-----
 local Section = AutoWalkTab:CreateSection("Auto Walk (Settings)")
 
--- Button Pause
-local PauseButton = AutoWalkTab:CreateButton({
-   Name = "⏸️ Pause (Auto Walk)",
-   Callback = function()
-       if not isPlaying then
-           Rayfield:Notify({
-               Title = "Auto Walk",
-               Content = "Tidak ada auto walk yang berjalan",
-               Duration = 3,
-               Image = "pause"
-           })
-           return
-       end
-       if isPaused then	
-           Rayfield:Notify({
-               Title = "Auto Walk",
-               Content = "Auto walk sebelum nya sudah di pause",
-               Duration = 2,
-               Image = "pause"
-           })
-           return
-       end
+-------------------------------------------------------------
+-- PAUSE FUNCTION (NO BACKGROUND VERSION)
+-------------------------------------------------------------
+local BTN_COLOR = Color3.fromRGB(38, 38, 38)
+local BTN_HOVER = Color3.fromRGB(55, 55, 55)
+local TEXT_COLOR = Color3.fromRGB(230, 230, 230)
+local WARN_COLOR = Color3.fromRGB(255, 140, 0)
+local SUCCESS_COLOR = Color3.fromRGB(0, 170, 85)
 
-       isPaused = true
-       Rayfield:Notify({
-           Title = "Auto Walk",
-           Content = "Behasil di pause",
-           Duration = 2,
-           Image = "pause"
-       })
-   end,
-})
+local function createPauseResumeUI()
+    local ui = Instance.new("ScreenGui")
+    ui.Name = "PauseResumeUI"
+    ui.IgnoreGuiInset = true
+    ui.ResetOnSpawn = false
+    ui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ui.Parent = CoreGui
 
--- Button Resume
-local ResumeButton = AutoWalkTab:CreateButton({
-   Name = "▶️ Resume (Auto Walk)",
-   Callback = function()
-       if not isPlaying then
-           Rayfield:Notify({
-               Title = "Auto Walk",
-               Content = "Tidak ada auto walk yang berjalan",
-               Duration = 3,
-               Image = "play"
-           })
-           return
-       end
-       if not isPaused then
-           Rayfield:Notify({
-               Title = "Auto Walk",
-               Content = "Auto walk sedang berjalan",
-               Duration = 2,
-               Image = "play"
-           })
-           return
-       end
+    -- Hilangkan frame utama (jadi cuma wadah transparan)
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "PR_Main"
+    mainFrame.BackgroundTransparency = 1 -- <- transparan penuh
+    mainFrame.BorderSizePixel = 0
+    mainFrame.AnchorPoint = Vector2.new(0.5, 1)
+    mainFrame.Position = UDim2.new(0.5, 0, 1, -120)
+    mainFrame.AutomaticSize = Enum.AutomaticSize.XY
+    mainFrame.Visible = false
+    mainFrame.Parent = ui
 
-       isPaused = false
-       Rayfield:Notify({
-           Title = "Auto Walk",
-           Content = "Berhasil di resume",
-           Duration = 2,
-           Image = "play"
-       })
-   end,
+    local layout = Instance.new("UIListLayout", mainFrame)
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.Padding = UDim.new(0, 10)
+
+    -- helper create button
+    local function createButton(text, icon, color)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0, 110, 0, 34)
+        btn.BackgroundColor3 = BTN_COLOR
+        btn.BackgroundTransparency = 0.1
+        btn.TextColor3 = TEXT_COLOR
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 14
+        btn.Text = icon .. "  " .. text
+        btn.AutoButtonColor = false
+        btn.BorderSizePixel = 0
+        btn.Parent = mainFrame
+
+        local c = Instance.new("UICorner", btn)
+        c.CornerRadius = UDim.new(0, 8)
+
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundColor3 = BTN_HOVER}):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundColor3 = BTN_COLOR}):Play()
+        end)
+
+        return btn
+    end
+
+    local pauseBtn = createButton("PAUSE", "⏸️", WARN_COLOR)
+    local resumeBtn = createButton("RESUME", "▶️", SUCCESS_COLOR)
+
+    -- Animasi muncul / hilang tanpa background
+    local tweenTime = 0.3
+    local finalYOffset = -120
+    local hiddenYOffset = 20
+
+    local function showUI()
+        mainFrame.Position = UDim2.new(0.5, 0, 1, hiddenYOffset)
+        mainFrame.Visible = true
+        TweenService:Create(mainFrame, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0.5, 0, 1, finalYOffset)
+        }):Play()
+    end
+
+    local function hideUI()
+        TweenService:Create(mainFrame, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Position = UDim2.new(0.5, 0, 1, hiddenYOffset)
+        }):Play()
+        task.delay(tweenTime, function()
+            mainFrame.Visible = false
+        end)
+    end
+
+    -- Integrasi pause/resume
+    pauseBtn.MouseButton1Click:Connect(function()
+        if not isPlaying then
+            Rayfield:Notify({Title = "Auto Walk", Content = "Tidak ada auto walk yang sedang berjalan.", Duration = 3, Image = "alert-triangle"})
+            return
+        end
+        if not isPaused then
+            isPaused = true
+            Rayfield:Notify({Title = "Auto Walk", Content = "Auto walk dijeda.", Duration = 2, Image = "pause"})
+        end
+    end)
+
+    resumeBtn.MouseButton1Click:Connect(function()
+        if not isPlaying then
+            Rayfield:Notify({Title = "Auto Walk", Content = "Tidak ada auto walk yang sedang berjalan.", Duration = 3, Image = "alert-triangle"})
+            return
+        end
+        if isPaused then
+            isPaused = false
+            Rayfield:Notify({Title = "Auto Walk", Content = "Auto walk dilanjutkan.", Duration = 2, Image = "play"})
+        end
+    end)
+
+    return {
+        mainFrame = mainFrame,
+        showUI = showUI,
+        hideUI = hideUI
+    }
+end
+
+-- Buat UI instance
+local pauseResumeUI = createPauseResumeUI()
+
+-------------------------------------------------------------
+-- TOGGLE
+-------------------------------------------------------------
+local Toggle = AutoWalkTab:CreateToggle({
+    Name = "Pause/Resume Menu",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            pauseResumeUI.showUI()
+        else
+            pauseResumeUI.hideUI()
+        end
+    end,
 })
 
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
-    Name = "⚡ Speed Auto Walk",
+    Name = "⚡ Set Speed",
     Range = {0.5, 1.2},
-    Increment = 0.01,
+    Increment = 0.10,
     Suffix = "x Speed",
     CurrentValue = 1,
     Callback = function(Value)
@@ -1952,4 +2026,5 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
 
