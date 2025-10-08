@@ -20,20 +20,20 @@ local MainTab = Window:CreateTab("List Scripts", 4483362458)
 -- =========================================================== =
 -- 🔰 BYPASS PRIVATE SERVER
 -- =========================================================== =
-MainTab:CreateSection("🔰 Bypass Private Server")
+MainTab:CreateSection("🔰 PRIVATE SERVER")
 
 MainTab:CreateParagraph({
     Title = "💡 Cara Penggunaan",
     Content = table.concat({
         "1. Masuk ke server yang tersedia pada script di bawah.",
         "2. Execute script loader ini.",
-        "3. Klik tombol 'RUN BYPASS PRIVATE SERVER'.",
-        "4. Tunggu sekitar 1 menit dan bypass akan aktif otomatis.",
+        "3. Klik tombol 'CREATE PRIVATE SERVER'.",
+        "4. Tunggu sekitar 1 menit dan server private akan aktif otomatis.",
     }, "\n")
 })
 
 MainTab:CreateButton({
-    Name = "🛡️ RUN BYPASS PRIVATE SERVER",
+    Name = "🛡️ CREATE SERVER PRIVATE",
     Callback = function()
         Rayfield:Notify({
             Title = "Bypass Private Server",
