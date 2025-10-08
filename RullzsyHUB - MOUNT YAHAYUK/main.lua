@@ -1265,7 +1265,7 @@ local Toggle = AutoWalkTab:CreateToggle({
 
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
-    Name = "⚡ Speed Auto Walk",
+    Name = "⚡ Set Speed",
     Range = {0.5, 4},
     Increment = 0.10,
     Suffix = "x Speed",
@@ -1803,3 +1803,4 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
