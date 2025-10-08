@@ -1,4 +1,4 @@
-	-------------------------------------------------------------
+-------------------------------------------------------------
 -- LOAD LIBRARY UI
 -------------------------------------------------------------
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/UI%20Liblary/Rayfield.lua'))()
@@ -18,7 +18,6 @@ local Window = Rayfield:CreateWindow({
 -------------------------------------------------------------
 local AccountTab = Window:CreateTab("Account", "user")
 local AutoWalkTab = Window:CreateTab("Auto Walk", "bot")
-local TeleportTab = Window:CreateTab("Teleport", "layers")
 local RunAnimationTab = Window:CreateTab("Run Animation", "person-standing")
 local UpdateTab = Window:CreateTab("Update Script", "file")
 local CreditsTab = Window:CreateTab("Credits", "scroll-text")
@@ -29,6 +28,9 @@ local CreditsTab = Window:CreateTab("Credits", "scroll-text")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 
 -------------------------------------------------------------
 -- IMPORT
@@ -38,8 +40,6 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local setclipboard = setclipboard or toclipboard
-
-
 
 -------------------------------------------------------------
 -- FILE SYSTEM CONFIGURATION
@@ -356,12 +356,12 @@ local currentHipHeight = nil
 local hipHeightOffset = 0
 
 -- NEW: Speed Control Variables
-local playbackSpeed = 1.0 -- Default speed (1.0 = normal, 0.5 = half speed, 2.0 = double speed)
+local playbackSpeed = 1.0
 
 -- NEW: Footstep Sound Variables
 local lastFootstepTime = 0
-local footstepInterval = 0.35 -- Time between footsteps (adjusts with speed)
-local leftFootstep = true -- Alternate between left and right foot
+local footstepInterval = 0.35
+local leftFootstep = true
 -------------------------------------------------------------
 
 -----| AUTO WALK FUNCTIONS |-----
@@ -820,23 +820,122 @@ local function startAutoWalkSequence()
     playNext()
 end
 
--- Function to run manual auto walk with looping
+-- Function to run manual auto walk with looping (fixed: walk to start for the first checkpoint)
 local function startManualAutoWalkSequence(startCheckpoint)
     currentCheckpoint = startCheckpoint - 1
     isManualMode = true
     autoLoopEnabled = true
 
+    -- helper: try walk to first frame's start position (returns true if reached)
+    local function walkToStartIfNeeded(data)
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = "Character belum siap (HRP tidak ditemukan).",
+                Duration = 3,
+                Image = "ban"
+            })
+            return false
+        end
+
+        local hrp = character.HumanoidRootPart
+        if not data or not data[1] or not data[1].position then
+            return true -- nothing to walk to
+        end
+
+        local startPos = tableToVec(data[1].position)
+        local distance = (hrp.Position - startPos).Magnitude
+
+        -- jarak maksimum
+        if distance > 100 then
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = string.format("Terlalu jauh (%.0f studs). Maks 100 studs untuk memulai.", distance),
+                Duration = 4,
+                Image = "alert-triangle"
+            })
+            autoLoopEnabled = false
+            isManualMode = false
+            return false
+        end
+
+        Rayfield:Notify({
+            Title = "Auto Walk (Manual)",
+            Content = string.format("Menuju titik awal... (%.0f studs)", distance),
+            Duration = 3,
+            Image = "walk"
+        })
+
+        local humanoidLocal = character:FindFirstChildOfClass("Humanoid")
+        if not humanoidLocal then
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = "Humanoid tidak ditemukan, gagal berjalan.",
+                Duration = 3,
+                Image = "ban"
+            })
+            autoLoopEnabled = false
+            isManualMode = false
+            return false
+        end
+
+        -- Mulai MoveTo
+        local reached = false
+        local reachedConnection
+        reachedConnection = humanoidLocal.MoveToFinished:Connect(function(r)
+            reached = r
+            if reachedConnection then
+                reachedConnection:Disconnect()
+                reachedConnection = nil
+            end
+        end)
+
+        humanoidLocal:MoveTo(startPos)
+
+        -- Timeout & monitor (boleh dibatalkan jika autoLoopEnabled diubah)
+        local timeout = 20
+        local waited = 0
+        while not reached and waited < timeout and autoLoopEnabled do
+            task.wait(0.25)
+            waited = waited + 0.25
+        end
+
+        if reached then
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = "Sudah sampai titik awal. Memulai playback...",
+                Duration = 2,
+                Image = "play"
+            })
+            return true
+        else
+            -- jika gagal (timeout atau dibatalkan)
+            if reachedConnection then
+                reachedConnection:Disconnect()
+                reachedConnection = nil
+            end
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = "Gagal mencapai titik awal (timeout atau dibatalkan).",
+                Duration = 3,
+                Image = "ban"
+            })
+            autoLoopEnabled = false
+            isManualMode = false
+            return false
+        end
+    end
+
     local function playNext()
         if not autoLoopEnabled then return end
-        
+
         currentCheckpoint = currentCheckpoint + 1
         if currentCheckpoint > #jsonFiles then
-            -- All checkpoints completed
+            -- Selesai semua checkpoint
             if loopingEnabled then
-                -- Loop kembali dari spawnpoint (checkpoint 1)
                 Rayfield:Notify({
                     Title = "Auto Walk (Manual)",
-                    Content = "Checkpoint terakhir selesai! Looping dari spawnpoint...",
+                    Content = "Semua checkpoint selesai! Looping dari spawnpoint...",
                     Duration = 3,
                     Image = "repeat"
                 })
@@ -874,6 +973,19 @@ local function startManualAutoWalkSequence(startCheckpoint)
         local data = loadCheckpoint(checkpointFile)
         if data and #data > 0 then
             task.wait(0.5)
+
+            -- Jika ini checkpoint pertama yang diminta user (ketika mulai manual+loop),
+            -- maka jalan dulu ke titik awal sebelum startPlayback agar tidak teleport.
+            if isManualMode and currentCheckpoint == startCheckpoint then
+                local okWalk = walkToStartIfNeeded(data)
+                if not okWalk then
+                    -- walk gagal / dibatalkan -> hentikan sequence
+                    return
+                end
+            end
+
+            -- Mulai playback (startPlayback masih melakukan penyesuaian posisi internal,
+            -- tetapi sekarang character sudah berada di posisi awal sehingga teleport tidak terlihat)
             startPlayback(data, playNext)
         else
             Rayfield:Notify({
@@ -890,56 +1002,134 @@ local function startManualAutoWalkSequence(startCheckpoint)
     playNext()
 end
 
+
 -- Function to rotate a single checkpoint (manual)
 local function playSingleCheckpointFile(fileName, checkpointIndex)
     if loopingEnabled then
-        -- Jika looping aktif, gunakan mode manual sequence
         stopPlayback()
         startManualAutoWalkSequence(checkpointIndex)
         return
     end
-    
-    -- Mode normal tanpa looping
+
     autoLoopEnabled = false
     isManualMode = false
     stopPlayback()
-    
-    local ok = EnsureJsonFile(fileName)
+
+    local ok, path = EnsureJsonFile(fileName)
     if not ok then
         Rayfield:Notify({
             Title = "Error",
-            Content = "Failed to ensure",
+            Content = "Failed to ensure JSON checkpoint",
             Duration = 4,
             Image = "ban"
         })
         return
     end
-    
+
     local data = loadCheckpoint(fileName)
     if not data or #data == 0 then
         Rayfield:Notify({
             Title = "Error",
-            Content = "File invalid",
+            Content = "File invalid / kosong",
             Duration = 4,
             Image = "ban"
         })
         return
     end
-    
-    Rayfield:Notify({
-        Title = "Auto Walk (Manual)",
-        Content = "Auto walk berhasil di jalankan",
-        Duration = 3,
-        Image = "bot"
-    })
-    
-    startPlayback(data, function()
+
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then
+        Rayfield:Notify({
+            Title = "Error",
+            Content = "HumanoidRootPart tidak ditemukan!",
+            Duration = 4,
+            Image = "ban"
+        })
+        return
+    end
+
+    -- Titik awal checkpoint dari JSON
+    local startPos = tableToVec(data[1].position)
+    local distance = (hrp.Position - startPos).Magnitude
+
+    -- Jika jarak > 100 studs, batalkan
+    if distance > 100 then
         Rayfield:Notify({
             Title = "Auto Walk (Manual)",
-            Content = "Auto walk selesai!",
-            Duration = 2,
-            Image = "check-check"
+            Content = string.format("Terlalu jauh (%.0f studs)! Harus dalam jarak 100.", distance),
+            Duration = 4,
+            Image = "alert-triangle"
         })
+        return
+    end
+
+    Rayfield:Notify({
+        Title = "Auto Walk (Manual)",
+        Content = string.format("Menuju ke titik awal... (%.0f studs)", distance),
+        Duration = 3,
+        Image = "walk"
+    })
+
+    -- Buat fungsi untuk berjalan otomatis menuju titik awal
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local moving = true
+    humanoid:MoveTo(startPos)
+
+    -- Pastikan karakter benar-benar berjalan (tidak teleport)
+    local reachedConnection
+    reachedConnection = humanoid.MoveToFinished:Connect(function(reached)
+        if reached then
+            moving = false
+            reachedConnection:Disconnect()
+
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = "Sudah sampai di titik awal, mulai playback...",
+                Duration = 2,
+                Image = "play"
+            })
+
+            -- Setelah sampai, mulai playback seperti biasa
+            task.wait(0.5)
+            startPlayback(data, function()
+                Rayfield:Notify({
+                    Title = "Auto Walk (Manual)",
+                    Content = "Auto walk selesai!",
+                    Duration = 2,
+                    Image = "check-check"
+                })
+            end)
+        else
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = "Gagal mencapai titik awal!",
+                Duration = 3,
+                Image = "ban"
+            })
+            moving = false
+            reachedConnection:Disconnect()
+        end
+    end)
+
+    -- Timeout antisipasi jika macet (misalnya terhalang)
+    task.spawn(function()
+        local timeout = 20
+        local elapsed = 0
+        while moving and elapsed < timeout do
+            task.wait(1)
+            elapsed += 1
+        end
+        if moving then
+            Rayfield:Notify({
+                Title = "Auto Walk (Manual)",
+                Content = "Tidak bisa mencapai titik awal (timeout)!",
+                Duration = 3,
+                Image = "ban"
+            })
+            humanoid:Move(Vector3.new(0,0,0))
+            moving = false
+            if reachedConnection then reachedConnection:Disconnect() end
+        end
     end)
 end
 
@@ -959,76 +1149,144 @@ end)
 -----| MENU 1 > AUTO WALK SETTINGS |-----
 local Section = AutoWalkTab:CreateSection("Auto Walk (Settings)")
 
--- Button Pause
-local PauseButton = AutoWalkTab:CreateButton({
-   Name = "⏸️ Pause (Auto Walk)",
-   Callback = function()
-       if not isPlaying then
-           Rayfield:Notify({
-               Title = "Auto Walk",
-               Content = "Tidak ada auto walk yang berjalan",
-               Duration = 3,
-               Image = "pause"
-           })
-           return
-       end
-       if isPaused then	
-           Rayfield:Notify({
-               Title = "Auto Walk",
-               Content = "Auto walk sebelum nya sudah di pause",
-               Duration = 2,
-               Image = "pause"
-           })
-           return
-       end
+-------------------------------------------------------------
+-- PAUSE FUNCTION (NO BACKGROUND VERSION)
+-------------------------------------------------------------
+local BTN_COLOR = Color3.fromRGB(38, 38, 38)
+local BTN_HOVER = Color3.fromRGB(55, 55, 55)
+local TEXT_COLOR = Color3.fromRGB(230, 230, 230)
+local WARN_COLOR = Color3.fromRGB(255, 140, 0)
+local SUCCESS_COLOR = Color3.fromRGB(0, 170, 85)
 
-       isPaused = true
-       Rayfield:Notify({
-           Title = "Auto Walk",
-           Content = "Behasil di pause",
-           Duration = 2,
-           Image = "pause"
-       })
-   end,
-})
+local function createPauseResumeUI()
+    local ui = Instance.new("ScreenGui")
+    ui.Name = "PauseResumeUI"
+    ui.IgnoreGuiInset = true
+    ui.ResetOnSpawn = false
+    ui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ui.Parent = CoreGui
 
--- Button Resume
-local ResumeButton = AutoWalkTab:CreateButton({
-   Name = "▶️ Resume (Auto Walk)",
-   Callback = function()
-       if not isPlaying then
-           Rayfield:Notify({
-               Title = "Auto Walk",
-               Content = "Tidak ada auto walk yang berjalan",
-               Duration = 3,
-               Image = "play"
-           })
-           return
-       end
-       if not isPaused then
-           Rayfield:Notify({
-               Title = "Auto Walk",
-               Content = "Auto walk sedang berjalan",
-               Duration = 2,
-               Image = "play"
-           })
-           return
-       end
+    -- Hilangkan frame utama (jadi cuma wadah transparan)
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "PR_Main"
+    mainFrame.BackgroundTransparency = 1 -- <- transparan penuh
+    mainFrame.BorderSizePixel = 0
+    mainFrame.AnchorPoint = Vector2.new(0.5, 1)
+    mainFrame.Position = UDim2.new(0.5, 0, 1, -120)
+    mainFrame.AutomaticSize = Enum.AutomaticSize.XY
+    mainFrame.Visible = false
+    mainFrame.Parent = ui
 
-       isPaused = false
-       Rayfield:Notify({
-           Title = "Auto Walk",
-           Content = "Berhasil di resume",
-           Duration = 2,
-           Image = "play"
-       })
-   end,
+    local layout = Instance.new("UIListLayout", mainFrame)
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.Padding = UDim.new(0, 10)
+
+    -- helper create button
+    local function createButton(text, icon, color)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0, 110, 0, 34)
+        btn.BackgroundColor3 = BTN_COLOR
+        btn.BackgroundTransparency = 0.1
+        btn.TextColor3 = TEXT_COLOR
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 14
+        btn.Text = icon .. "  " .. text
+        btn.AutoButtonColor = false
+        btn.BorderSizePixel = 0
+        btn.Parent = mainFrame
+
+        local c = Instance.new("UICorner", btn)
+        c.CornerRadius = UDim.new(0, 8)
+
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundColor3 = BTN_HOVER}):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundColor3 = BTN_COLOR}):Play()
+        end)
+
+        return btn
+    end
+
+    local pauseBtn = createButton("PAUSE", "⏸️", WARN_COLOR)
+    local resumeBtn = createButton("RESUME", "▶️", SUCCESS_COLOR)
+
+    -- Animasi muncul / hilang tanpa background
+    local tweenTime = 0.3
+    local finalYOffset = -120
+    local hiddenYOffset = 20
+
+    local function showUI()
+        mainFrame.Position = UDim2.new(0.5, 0, 1, hiddenYOffset)
+        mainFrame.Visible = true
+        TweenService:Create(mainFrame, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0.5, 0, 1, finalYOffset)
+        }):Play()
+    end
+
+    local function hideUI()
+        TweenService:Create(mainFrame, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Position = UDim2.new(0.5, 0, 1, hiddenYOffset)
+        }):Play()
+        task.delay(tweenTime, function()
+            mainFrame.Visible = false
+        end)
+    end
+
+    -- Integrasi pause/resume
+    pauseBtn.MouseButton1Click:Connect(function()
+        if not isPlaying then
+            Rayfield:Notify({Title = "Auto Walk", Content = "Tidak ada auto walk yang sedang berjalan.", Duration = 3, Image = "alert-triangle"})
+            return
+        end
+        if not isPaused then
+            isPaused = true
+            Rayfield:Notify({Title = "Auto Walk", Content = "Auto walk dijeda.", Duration = 2, Image = "pause"})
+        end
+    end)
+
+    resumeBtn.MouseButton1Click:Connect(function()
+        if not isPlaying then
+            Rayfield:Notify({Title = "Auto Walk", Content = "Tidak ada auto walk yang sedang berjalan.", Duration = 3, Image = "alert-triangle"})
+            return
+        end
+        if isPaused then
+            isPaused = false
+            Rayfield:Notify({Title = "Auto Walk", Content = "Auto walk dilanjutkan.", Duration = 2, Image = "play"})
+        end
+    end)
+
+    return {
+        mainFrame = mainFrame,
+        showUI = showUI,
+        hideUI = hideUI
+    }
+end
+
+-- Buat UI instance
+local pauseResumeUI = createPauseResumeUI()
+
+-------------------------------------------------------------
+-- TOGGLE
+-------------------------------------------------------------
+local Toggle = AutoWalkTab:CreateToggle({
+    Name = "Pause/Resume Menu",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            pauseResumeUI.showUI()
+        else
+            pauseResumeUI.hideUI()
+        end
+    end,
 })
 
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
-    Name = "⚡ Speed Auto Walk",
-    Range = {0.5, 2},
+    Name = "⚡ Set Speed",
+    Range = {0.5, 1.2},
     Increment = 0.01,
     Suffix = "x Speed",
     CurrentValue = 1,
@@ -1069,27 +1327,6 @@ local LoopingToggle = AutoWalkTab:CreateToggle({
                Duration = 3,
                Image = "x"
            })
-       end
-   end,
-})
-
--------------------------------------------------------------
-
------| MENU 2 > AUTO WALK (AUTOMATIC) |-----
-local Section = AutoWalkTab:CreateSection("Auto Walk (Automatic)")
-
-local AutoToggle = AutoWalkTab:CreateToggle({
-   Name = "Auto Walk (Start To End)",
-   CurrentValue = false,
-   Callback = function(Value)
-       if Value then
-           isManualMode = false
-           autoLoopEnabled = true
-           startAutoWalkSequence()
-       else
-           autoLoopEnabled = false
-           isManualMode = false
-           stopPlayback()
        end
    end,
 })
@@ -1188,549 +1425,8 @@ local CP5Toggle = AutoWalkTab:CreateToggle({
         end
     end,
 })
-
--- Toggle Auto Walk (Checkpoint 6)
-local CP6Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 6)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_6.json", 7)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 7)
-local CP7Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 7)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_7.json", 8)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 8)
-local CP8Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 8)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_8.json", 9)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 9)
-local CP9Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 9)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_9.json", 10)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 10)
-local CP10Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 10)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_10.json", 11)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 11)
-local CP11Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 11)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_11.json", 12)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 12)
-local CP12Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 12)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_12.json", 13)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 13)
-local CP13Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 13)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_13.json", 14)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 14)
-local CP14Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 14)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_14.json", 15)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 15)
-local CP15Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 15)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_15.json", 16)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 16)
-local CP16Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 16)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_16.json", 17)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 17)
-local CP17Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 17)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_17.json", 18)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 18)
-local CP18Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 18)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_18.json", 19)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 19)
-local CP19Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 19)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_19.json", 20)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 20)
-local CP20Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 20)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_20.json", 21)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 21)
-local CP21Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 21)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_21.json", 22)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 22)
-local CP22Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 22)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_22.json", 23)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 23)
-local CP23Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 23)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_23.json", 24)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 24)
-local CP24Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 24)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_24.json", 25)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 25)
-local CP25Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 25)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_25.json", 26)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 26)
-local CP26Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 26)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_26.json", 27)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
 -------------------------------------------------------------
 -- AUTO WALK - END
--------------------------------------------------------------
-
-
-
--------------------------------------------------------------
--- TELEPORT
--------------------------------------------------------------
-local OffsetY = 10
-
--- Manual Teleport Notification
-local function ManualTeleport(x, y, z, name)
-   local player = game.Players.LocalPlayer
-   if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-      player.Character.HumanoidRootPart.CFrame = CFrame.new(x, y + OffsetY, z)
-   end
-
-   Rayfield:Notify({
-      Title = "Teleport",
-      Content = "Teleport berhasil",
-      Duration = 3,
-      Image = "check-check",
-   })
-end
-
------------------------------------------------------------
-
------| MENU - LIST TELEPORT |-----
-local Section = TeleportTab:CreateSection("List All Checkpoint")
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Spawnpoint)",
-   Callback = function()
-      ManualTeleport(16.50, 55.17, -1082.46, "Spawnpoint")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 1)",
-   Callback = function()
-      ManualTeleport(4.55, 12.59, -404.47, "Checkpoint 1")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 2)",
-   Callback = function()
-      ManualTeleport(-184.65, 128.12, 409.67, "Checkpoint 2")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 3)",
-   Callback = function()
-      ManualTeleport(-165.27, 229.63, 653.13, "Checkpoint 3")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 4)",
-   Callback = function()
-      ManualTeleport(-38.09, 406.57, 615.99, "Checkpoint 4")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 5)",
-   Callback = function()
-      ManualTeleport(130.63, 650.62, 613.20, "Checkpoint 5")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 6)",
-   Callback = function()
-      ManualTeleport(-246.42, 665.71, 734.37, "Checkpoint 6")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 7)",
-   Callback = function()
-      ManualTeleport(-684.35, 640.78, 867.35, "Checkpoint 7")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 8)",
-   Callback = function()
-      ManualTeleport(-658.12, 688.45, 1458.11, "Checkpoint 8")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 9)",
-   Callback = function()
-      ManualTeleport(-508.14, 902.88, 1868.13, "Checkpoint 9")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 10)",
-   Callback = function()
-      ManualTeleport(60.87, 949.89, 2088.47, "Checkpoint 10")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 11)",
-   Callback = function()
-      ManualTeleport(52.08, 981.51, 2450.21, "Checkpoint 11")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 12)",
-   Callback = function()
-      ManualTeleport(72.78, 1096.94, 2457.26, "Checkpoint 12")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 13)",
-   Callback = function()
-      ManualTeleport(262.57, 1270.09, 2037.86, "Checkpoint 13")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 14)",
-   Callback = function()
-      ManualTeleport(-418.76, 1302.15, 2394.39, "Checkpoint 14")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 15)",
-   Callback = function()
-      ManualTeleport(-773.30, 1313.91, 2664.31, "Checkpoint 15")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 16)",
-   Callback = function()
-      ManualTeleport(-837.48, 1474.65, 2625.87, "Checkpoint 16")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 17)",
-   Callback = function()
-      ManualTeleport(-468.58, 1465.65, 2769.42, "Checkpoint 17")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 18)",
-   Callback = function()
-      ManualTeleport(-467.13, 1537.45, 2836.52, "Checkpoint 18")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 19)",
-   Callback = function()
-      ManualTeleport(-384.99, 1640.25, 2794.14, "Checkpoint 19")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 20)",
-   Callback = function()
-      ManualTeleport(-208.39, 1665.73, 2749.29, "Checkpoint 20")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 21)",
-   Callback = function()
-      ManualTeleport(-232.70, 1738.04, 2792.17, "Checkpoint 21")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 22)",
-   Callback = function()
-      ManualTeleport(-424.35, 1740.62, 2798.06, "Checkpoint 22")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 23)",
-   Callback = function()
-      ManualTeleport(-423.62, 1712.72, 3420.89, "Checkpoint 23")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 24)",
-   Callback = function()
-      ManualTeleport(70.76, 1718.67, 3427.36, "Checkpoint 24")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 25)",
-   Callback = function()
-      ManualTeleport(436.04, 1720.55, 3430.73, "Checkpoint 25")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Checkpoint 26)",
-   Callback = function()
-      ManualTeleport(625.14, 1799.19, 3432.80, "Checkpoint 26")
-   end,
-})
-
-TeleportTab:CreateButton({
-   Name = "Teleport (Puncak)",
-   Callback = function()
-      ManualTeleport(781.26, 2163.24, 3921.02, "Puncak")
-   end,
-})
--------------------------------------------------------------
--- TELEPORT - END
 -------------------------------------------------------------
 
 
@@ -2154,6 +1850,3 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
-
-
-
