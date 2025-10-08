@@ -75,6 +75,10 @@ local ReleasedScripts = {
         Name = "MOUNT PENGANGGURAN",
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20PENGANGGURAN/main.lua",
     },
+    {
+      Name = "MOUNT YAHAYUK",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
+    },
 }
 
 for _, script in ipairs(ReleasedScripts) do
@@ -85,38 +89,6 @@ for _, script in ipairs(ReleasedScripts) do
                 Title = "Executing Script",
                 Content = "Loading " .. script.Name .. " Script...",
                 Duration = 4,
-                Image = 4483362458,
-                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
-            })
-
-            task.wait(0.5)
-            Rayfield:Destroy()
-            loadstring(game:HttpGet(script.URL))()
-        end,
-    })
-end
-
--- =========================================================== =
--- MOUNT YAHAYUK
--- =========================================================== =
-MainTab:CreateSection("🟢 Script Rilis (Yahayuk)")
-
-local YahyaScripts = {
-    {
-        Name = "MOUNT YAHAYUK 🟢",
-        Description = "Beberapa fitur di hilangkan seperti loop, sama auto injek checkpoint, jadi sekarang sistem nya injek checkpoint manual.",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
-    },
-}
-
-for _, script in ipairs(YahyaScripts) do
-    MainTab:CreateButton({
-        Name = script.Name,
-        Callback = function()
-            Rayfield:Notify({
-                Title = "Executing Script",
-                Content = script.Description,
-                Duration = 5,
                 Image = 4483362458,
                 Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
             })
