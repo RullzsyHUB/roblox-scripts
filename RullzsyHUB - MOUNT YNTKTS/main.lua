@@ -1279,7 +1279,7 @@ local SpeedSlider = AutoWalkTab:CreateSlider({
     Range = {0.5, 1.5},
     Increment = 0.10,
     Suffix = "x Speed",
-    CurrentValue = 1,
+    CurrentValue = 1.0,
     Callback = function(Value)
         playbackSpeed = Value
 
