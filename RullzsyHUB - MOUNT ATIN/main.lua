@@ -1286,10 +1286,10 @@ local Toggle = AutoWalkTab:CreateToggle({
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
     Name = "⚡ Set Speed",
-    Range = {0.5, 1.2},
+    Range = {0.5, 1.5},
     Increment = 0.01,
     Suffix = "x Speed",
-    CurrentValue = 1,
+    CurrentValue = 1.0,
     Callback = function(Value)
         playbackSpeed = Value
 
@@ -1418,6 +1418,321 @@ local CP5Toggle = AutoWalkTab:CreateToggle({
     Callback = function(Value)
         if Value then
             playSingleCheckpointFile("checkpoint_5.json", 6)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 6)
+local CP6Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 6)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_6.json", 7)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 7)
+local CP7Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 7)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_7.json", 8)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 8)
+local CP8Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 8)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_8.json", 9)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 9)
+local CP9Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 9)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_9.json", 10)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 10)
+local CP10Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 10)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_10.json", 11)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 11)
+local CP11Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 11)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_11.json", 12)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 12)
+local CP12Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 12)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_12.json", 13)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 13)
+local CP13Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 13)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_13.json", 14)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 14)
+local CP14Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 14)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_14.json", 15)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 15)
+local CP15Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 15)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_15.json", 16)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 16)
+local CP16Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 16)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_16.json", 17)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 17)
+local CP17Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 17)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_17.json", 18)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 18)
+local CP18Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 18)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_18.json", 19)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 19)
+local CP19Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 19)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_19.json", 20)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 20)
+local CP20Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 20)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_20.json", 21)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 21)
+local CP21Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 21)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_21.json", 22)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 22)
+local CP22Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 22)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_22.json", 23)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 23)
+local CP23Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 23)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_23.json", 24)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 24)
+local CP24Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 24)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_24.json", 25)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 25)
+local CP25Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 25)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_25.json", 26)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 26)
+local CP26Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 26)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_26.json", 27)
         else
             autoLoopEnabled = false
             isManualMode = false
