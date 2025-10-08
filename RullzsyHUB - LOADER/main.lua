@@ -103,14 +103,9 @@ MainTab:CreateSection("🟢 Script Rilis (Yahayuk)")
 
 local YahyaScripts = {
     {
-        Name = "MOUNT YAHAYUK V1 🟢",
-        Description = "Gunakan versi ini terlebih dahulu. Jika posisi atau checkpoint terasa tidak sesuai dengan map yang kamu mainkan, coba gunakan versi V2 di bawah.",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main_v1.lua",
-    },
-    {
-        Name = "MOUNT YAHAYUK V2 🟢",
-        Description = "Alternatif versi untuk map dengan penempatan checkpoint yang berbeda dari V1.",
-        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main_v2.lua",
+        Name = "MOUNT YAHAYUK 🟢",
+        Description = "Beberapa fitur di hilangkan seperti loop, sama auto injek checkpoint, jadi sekarang sistem nya injek checkpoint manual.",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
     },
 }
 
