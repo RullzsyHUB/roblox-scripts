@@ -494,8 +494,8 @@ local function simulateNaturalMovement(moveDirection, velocity)
     pcall(function()
         local state = humanoid:GetState()
         onGround = (state == Enum.HumanoidStateType.Running or 
-                   state == Enum.HumanoidStateType.RunningNoPhysics or 
-                   state == Enum.HumanoidStateType.Landed)
+                    state == Enum.HumanoidStateType.RunningNoPhysics or 
+                    state == Enum.HumanoidStateType.Landed)
     end)
     
     -- Only play footsteps if moving and on ground
@@ -918,33 +918,39 @@ local function startManualAutoWalkSequence(startCheckpoint)
         end
     end
 
-    -- Helper: respawn safely and wait until ready
-    local function forceRespawnAndWait(callback)
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.Health = 0
+    -- Helper: Teleport to start and continue the loop
+    local function teleportAndRestart(callback)
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            warn("Cannot teleport, character not found.")
+            autoLoopEnabled = false; isManualMode = false; stopPlayback()
+            Rayfield:Notify({ Title = "Enable Loop", Content = "Loop dihentikan, karakter tidak ditemukan.", Duration = 4, Image = "ban" })
+            return
         end
 
+        local hrp = character.HumanoidRootPart
+        local targetPosition = Vector3.new(2269.61, 805.00, -2325.90)
+
         Rayfield:Notify({
             Title = "Enable Loop",
-            Content = "Respawning...",
+            Content = "Checkpoint akhir tercapai, teleport ke awal...",
             Duration = 3,
-            Image = "refresh-cw"
+            Image = "move"
         })
-
-        -- tunggu karakter baru muncul
-        player.CharacterAdded:Wait()
-        character = player.Character or player.CharacterAdded:Wait()
-        repeat task.wait() until character:FindFirstChild("HumanoidRootPart") and character:FindFirstChildOfClass("Humanoid")
+        
+        -- Teleport and reset physics properties
+        hrp.CFrame = CFrame.new(targetPosition)
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        
+        task.wait(1.5) -- Wait for teleport to stabilize
 
         Rayfield:Notify({
             Title = "Enable Loop",
-            Content = "Respawn selesai! Melanjutkan ke Spawnpoint...",
+            Content = "Teleport selesai! Melanjutkan ke Spawnpoint...",
             Duration = 3,
             Image = "repeat"
         })
 
-        task.wait(1)
         if callback then callback() end
     end
 
@@ -956,13 +962,8 @@ local function startManualAutoWalkSequence(startCheckpoint)
         if currentCheckpoint > #jsonFiles then
             -- Sudah mencapai checkpoint terakhir
             if loopingEnabled then
-                Rayfield:Notify({
-                    Title = "Enable Loop",
-                    Content = "Checkpoint akhir tercapai, respawn ulang...",
-                    Duration = 4,
-                    Image = "refresh-cw"
-                })
-                forceRespawnAndWait(function()
+                -- Panggil fungsi teleport baru
+                teleportAndRestart(function()
                     currentCheckpoint = 0
                     playNext()
                 end)
@@ -1300,7 +1301,7 @@ local Toggle = AutoWalkTab:CreateToggle({
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
     Name = "⚡ Set Speed",
-    Range = {0.5, 1.2},
+    Range = {0.5, 1.5},
     Increment = 0.10,
     Suffix = "x Speed",
     CurrentValue = 1.0,
@@ -1326,22 +1327,22 @@ local LoopingToggle = AutoWalkTab:CreateToggle({
    Name = "🔄 Enable Looping",
    CurrentValue = false,
    Callback = function(Value)
-       loopingEnabled = Value
-       if Value then
-           Rayfield:Notify({
-               Title = "Looping",
-               Content = "Fitur looping diaktifkan!",
-               Duration = 3,
-               Image = "repeat"
-           })
-       else
-           Rayfield:Notify({
-               Title = "Looping",
-               Content = "Fitur looping dinonaktifkan!",
-               Duration = 3,
-               Image = "x"
-           })
-       end
+        loopingEnabled = Value
+        if Value then
+            Rayfield:Notify({
+                Title = "Looping",
+                Content = "Fitur looping diaktifkan!",
+                Duration = 3,
+                Image = "repeat"
+            })
+        else
+            Rayfield:Notify({
+                Title = "Looping",
+                Content = "Fitur looping dinonaktifkan!",
+                Duration = 3,
+                Image = "x"
+            })
+        end
    end,
 })
 
