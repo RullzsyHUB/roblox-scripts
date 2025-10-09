@@ -69,7 +69,7 @@ PrivateServerTab:CreateSection("🛡️ CREATE PRIVATE SERVER")
 PrivateServerTab:CreateParagraph({
     Title = "📘 Panduan Membuat Server",
     Content = table.concat({
-        "Buat dan jalankan server privat kamu sendiri hanya dengan satu klik.",
+        "Ikuti langkah-langkah di bawah ini untuk membuat private server.",
         "",
         "Langkah-langkah:",
         "1. Pastikan kamu sudah berada di dalam game yang ingin dimainkan.",
