@@ -20,7 +20,7 @@ local MainTab = Window:CreateTab("List Scripts", 4483362458)
 -- =========================================================== =
 -- 🟢 SCRIPT SUDAH RILIS (MAP BIASA)
 -- =========================================================== =
-MainTab:CreateSection("🟢 Script Rilis")
+MainTab:CreateSection("🟢 All Script: 8")
 
 local ReleasedScripts = {
     {
