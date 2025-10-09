@@ -18,38 +18,6 @@ local Window = Rayfield:CreateWindow({
 local MainTab = Window:CreateTab("List Scripts", 4483362458)
 
 -- =========================================================== =
--- 🔰 BYPASS PRIVATE SERVER
--- =========================================================== =
-MainTab:CreateSection("🔰 PRIVATE SERVER")
-
-MainTab:CreateParagraph({
-    Title = "💡 Cara Penggunaan",
-    Content = table.concat({
-        "1. Masuk ke server yang tersedia pada script di bawah.",
-        "2. Execute script loader ini.",
-        "3. Klik tombol 'CREATE PRIVATE SERVER'.",
-        "4. Tunggu sekitar 1 menit dan server private akan aktif otomatis.",
-    }, "\n")
-})
-
-MainTab:CreateButton({
-    Name = "🛡️ CREATE SERVER PRIVATE",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "Bypass Private Server",
-            Content = "Menjalankan script bypass... tunggu sebentar.",
-            Duration = 3,
-            Image = 4483362458,
-            Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
-        })
-
-        task.wait(0.5)
-        Rayfield:Destroy()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20PRIVATE%20SERVER/main.lua"))()
-    end,
-})
-
--- =========================================================== =
 -- 🟢 SCRIPT SUDAH RILIS (MAP BIASA)
 -- =========================================================== =
 MainTab:CreateSection("🟢 Script Rilis")
@@ -76,12 +44,16 @@ local ReleasedScripts = {
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20PENGANGGURAN/main.lua",
     },
     {
-      Name = "MOUNT YAHAYUK",
+        Name = "MOUNT YAHAYUK",
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK/main.lua",
     },
     {
-      Name = "MOUNT HMMM",
+        Name = "MOUNT HMMM",
         URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20HMMM/main.lua",
+    },
+    {
+        Name = "MOUNT STECU",
+        URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20STECU/main.lua",
     },
 }
 
@@ -105,50 +77,11 @@ for _, script in ipairs(ReleasedScripts) do
 end
 
 -- =========================================================== =
--- 🟠 SCRIPT DALAM TAHAP UPDATE / MAINTENANCE
--- =========================================================== =
-MainTab:CreateSection("🟠 Script Dalam Update / Maintenance")
-
-local UpdatingScripts = {
-    "MOUNT STECU",
-}
-
-for _, name in ipairs(UpdatingScripts) do
-    MainTab:CreateButton({
-        Name = "🟠 SCRIPT " .. name,
-        Callback = function()
-            Rayfield:Notify({
-                Title = "Maintenance Mode",
-                Content = "Script " .. name .. " sedang dalam tahap update / maintenance.\nUntuk sementara tidak dapat diakses.",
-                Duration = 3,
-                Image = 4483362458,
-                Actions = { Ignore = { Name = "Okay!", Callback = function() end } },
-            })
-        end,
-    })
-end
-
--- =========================================================== =
--- INFO SECTION
--- =========================================================== =
-MainTab:CreateSection("Information")
-
-MainTab:CreateParagraph({
-    Title = "📌 Panduan Penggunaan",
-    Content = table.concat({
-        "Silakan pilih salah satu script yang tersedia di atas untuk digunakan.",
-        "",
-        "🟢 = Script sudah rilis & bisa dijalankan.",
-        "🟠 = Script sedang dalam tahap update / maintenance (tidak bisa dijalankan)."
-    }, "\n")
-})
-
--- =========================================================== =
 -- NOTIFIKASI SAAT LOAD
 -- =========================================================== =
 Rayfield:Notify({
     Title = "RullzsyHUB Loader!",
-    Content = "Selamat datang! Silahkan pilih salah satu menu di atas.",
+    Content = "Selamat datang! Silahkan pilih salah satu script di atas untuk dijalankan.",
     Duration = 5,
     Image = 4483362458,
     Actions = {
