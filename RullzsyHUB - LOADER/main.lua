@@ -81,7 +81,7 @@ end
 -- =========================================================== =
 local PrivateServerTab = Window:CreateTab("Private Server", 4483362458)
 
-PrivateServerTab:CreateSection("🛡️ Private Server Generator")
+PrivateServerTab:CreateSection("🛡️ PRIVATE SERVER")
 
 PrivateServerTab:CreateParagraph({
     Title = "💡 Cara Penggunaan",
