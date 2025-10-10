@@ -7,7 +7,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/Rull
 -- WINDOW PROCESS
 -------------------------------------------------------------
 local Window = Rayfield:CreateWindow({
-   Name = "RullzsyHUB | MOUNT NIGHTMATE EXPEDITION",
+   Name = "RullzsyHUB | NIGHTMARE EXPEDITION",
    Icon = "braces",
    LoadingTitle = "Created By RullzsyHUB",
    LoadingSubtitle = "Follow Tiktok: @rullzsy99",
@@ -500,8 +500,8 @@ local function simulateNaturalMovement(moveDirection, velocity)
     pcall(function()
         local state = humanoid:GetState()
         onGround = (state == Enum.HumanoidStateType.Running or 
-                   state == Enum.HumanoidStateType.RunningNoPhysics or 
-                   state == Enum.HumanoidStateType.Landed)
+                    state == Enum.HumanoidStateType.RunningNoPhysics or 
+                    state == Enum.HumanoidStateType.Landed)
     end)
     
     -- Only play footsteps if moving and on ground
@@ -937,30 +937,22 @@ local function startManualAutoWalkSequence(startCheckpoint)
         if not autoLoopEnabled then return end
 
         currentCheckpoint = currentCheckpoint + 1
+        
+        -- [[ PERUBAHAN DI SINI ]]
+        -- Jika sudah melewati checkpoint terakhir, hentikan proses.
+        -- Ini mencegahnya looping kembali ke spawnpoint saat mode manual.
         if currentCheckpoint > #jsonFiles then
-            -- Selesai semua checkpoint
-            if loopingEnabled then
-                Rayfield:Notify({
-                    Title = "Auto Walk (Manual)",
-                    Content = "Semua checkpoint selesai! Looping dari spawnpoint...",
-                    Duration = 3,
-                    Image = "repeat"
-                })
-                task.wait(1)
-                currentCheckpoint = 0
-                playNext()
-            else
-                autoLoopEnabled = false
-                isManualMode = false
-                Rayfield:Notify({
-                    Title = "Auto Walk (Manual)",
-                    Content = "Auto walk selesai!",
-                    Duration = 2,
-                    Image = "check-check"
-                })
-            end
-            return
+            autoLoopEnabled = false
+            isManualMode = false
+            Rayfield:Notify({
+                Title = "Auto Walk Selesai",
+                Content = "Telah mencapai checkpoint terakhir.",
+                Duration = 5,
+                Image = "check-check"
+            })
+            return -- Hentikan fungsi di sini
         end
+        -- [[ AKHIR DARI PERUBAHAN ]]
 
         local checkpointFile = jsonFiles[currentCheckpoint]
 
@@ -1319,22 +1311,22 @@ local LoopingToggle = AutoWalkTab:CreateToggle({
    Name = "🔄 Enable Looping",
    CurrentValue = false,
    Callback = function(Value)
-       loopingEnabled = Value
-       if Value then
-           Rayfield:Notify({
-               Title = "Looping",
-               Content = "Fitur looping diaktifkan!",
-               Duration = 3,
-               Image = "repeat"
-           })
-       else
-           Rayfield:Notify({
-               Title = "Looping",
-               Content = "Fitur looping dinonaktifkan!",
-               Duration = 3,
-               Image = "x"
-           })
-       end
+        loopingEnabled = Value
+        if Value then
+            Rayfield:Notify({
+                Title = "Looping",
+                Content = "Fitur looping diaktifkan!",
+                Duration = 3,
+                Image = "repeat"
+            })
+        else
+            Rayfield:Notify({
+                Title = "Looping",
+                Content = "Fitur looping dinonaktifkan!",
+                Duration = 3,
+                Image = "x"
+            })
+        end
    end,
 })
 
