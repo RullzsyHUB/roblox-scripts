@@ -1813,6 +1813,21 @@ local CP25Toggle = AutoWalkTab:CreateToggle({
         end
     end,
 })
+
+-- Toggle Auto Walk (Checkpoint 26)
+local CP26Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 26)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_26.json", 27)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
 -------------------------------------------------------------
 -- AUTO WALK - END
 -------------------------------------------------------------
