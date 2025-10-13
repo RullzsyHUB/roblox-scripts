@@ -17,9 +17,9 @@ local Window = Rayfield:CreateWindow({
 -- TAB MENU
 -------------------------------------------------------------
 local AccountTab = Window:CreateTab("Account", "user")
+local BypassTab = Window:CreateTab("Bypass", "shield")
 local AutoWalkTab = Window:CreateTab("Auto Walk", "bot")
 local VisualTab = Window:CreateTab("Visual", "layers")
-local BypassTab = Window:CreateTab("Bypass", "shield")
 local RunAnimationTab = Window:CreateTab("Run Animation", "person-standing")
 local SpectatorTab = Window:CreateTab("Spectator", "eye")
 local UpdateTab = Window:CreateTab("Update Script", "file")
@@ -2404,5 +2404,6 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
 
 
