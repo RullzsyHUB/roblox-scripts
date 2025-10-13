@@ -17,8 +17,11 @@ local Window = Rayfield:CreateWindow({
 -- TAB MENU
 -------------------------------------------------------------
 local AccountTab = Window:CreateTab("Account", "user")
+local BypassTab = Window:CreateTab("Bypass", "shield")
 local AutoWalkTab = Window:CreateTab("Auto Walk", "bot")
+local VisualTab = Window:CreateTab("Visual", "layers")
 local RunAnimationTab = Window:CreateTab("Run Animation", "person-standing")
+local SpectatorTab = Window:CreateTab("Spectator", "eye")
 local UpdateTab = Window:CreateTab("Update Script", "file")
 local CreditsTab = Window:CreateTab("Credits", "scroll-text")
 
@@ -31,6 +34,7 @@ local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
+local CurrentCamera = workspace.CurrentCamera
 
 -------------------------------------------------------------
 -- IMPORT
@@ -40,6 +44,7 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local setclipboard = setclipboard or toclipboard
+local LocalPlayer = Players.LocalPlayer
 
 
 
@@ -282,6 +287,19 @@ end)
 -------------------------------------------------------------
 -- ACCOUNT TAB - END
 -------------------------------------------------------------
+
+
+
+-- =============================================================
+-- BYPAS AFK
+-- =============================================================
+-- Section
+local Section = BypassTab:CreateSection("List All Bypass")
+
+local Paragraph = BypassTab:CreateParagraph({Title = "⚠️ Keterangan", Content = "Mount ini tidak bisa menggunakan bypass afk, solusi alternative gunakan auto clicker saja, kasih delay 30/60 Detik."})
+-- =============================================================
+-- BYPAS AFK - END
+-- =============================================================
 
 
 
@@ -1556,6 +1574,42 @@ local CP15Toggle = AutoWalkTab:CreateToggle({
 
 
 
+-- =============================================================
+-- VISUAL
+-- =============================================================
+
+-- ===== | TIME MENU | ===== --
+local VisualSection = VisualTab:CreateSection("Time Menu")
+
+-- Variables
+local Lighting = game:GetService("Lighting")
+
+-- Slider Time Changer
+local TimeSlider = VisualTab:CreateSlider({
+   Name = "🕒 Time Changer",
+   Range = {0, 24},
+   Increment = 1,
+   Suffix = "Hours",
+   CurrentValue = Lighting.ClockTime,
+   Callback = function(Value)
+       Lighting.ClockTime = Value
+
+       if Value >= 6 and Value < 18 then
+           Lighting.Brightness = 2
+           Lighting.OutdoorAmbient = Color3.fromRGB(200, 200, 200)
+       else
+           Lighting.Brightness = 0.5
+           Lighting.OutdoorAmbient = Color3.fromRGB(50, 50, 100)
+       end
+   end,
+})
+-- ===== | TIME MENU - END | ===== --
+-- =============================================================
+-- VISUAL - END
+-- =============================================================
+
+
+
 -------------------------------------------------------------
 -- RUN ANIMATION
 -------------------------------------------------------------
@@ -1848,6 +1902,115 @@ end
 -------------------------------------------------------------
 -- RUN ANIMATION - END
 -------------------------------------------------------------
+
+
+
+-- =============================================================
+-- SPECTATOR
+-- =============================================================
+
+local currentSpectateTarget = nil
+local spectateConnection = nil
+local playerToggles = {}
+
+-- Buat Section utama
+local SpectatorSection = SpectatorTab:CreateSection("List All Players")
+
+-- Function untuk memulai spectate target
+local function StartSpectate(targetPlayer)
+    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        -- tunggu sampai player respawn
+        targetPlayer.CharacterAdded:Wait()
+        task.wait(0.1)
+    end
+
+    local camera = workspace.CurrentCamera
+    camera.CameraSubject = targetPlayer.Character:WaitForChild("Humanoid")
+    camera.CameraType = Enum.CameraType.Custom
+    currentSpectateTarget = targetPlayer
+
+    -- Update terus kalau target respawn
+    if spectateConnection then spectateConnection:Disconnect() end
+    spectateConnection = targetPlayer.CharacterAdded:Connect(function(newChar)
+        task.wait(0.1)
+        if currentSpectateTarget == targetPlayer then
+            camera.CameraSubject = newChar:WaitForChild("Humanoid")
+            camera.CameraType = Enum.CameraType.Custom
+        end
+    end)
+
+    Rayfield:Notify({
+        Image = "eye",
+        Title = "Spectator",
+        Content = "Kamu berhasil spec " .. targetPlayer.Name,
+        Duration = 5
+    })
+end
+
+-- Function untuk berhenti spectate
+local function StopSpectate()
+    local camera = workspace.CurrentCamera
+    camera.CameraSubject = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    camera.CameraType = Enum.CameraType.Custom
+    currentSpectateTarget = nil
+    if spectateConnection then spectateConnection:Disconnect() end
+    Rayfield:Notify({
+        Image = "eye",
+        Title = "Spectator",
+        Content = "Spectator dimatikan",
+        Duration = 4
+    })
+end
+
+-- Membuat toggle per player
+local function AddPlayerToggle(plr)
+    if plr == LocalPlayer then return end
+
+    local toggleName = "👤 " .. plr.DisplayName .. " | " .. plr.Name
+    local toggle = SpectatorTab:CreateToggle({
+        Name = toggleName,
+        CurrentValue = false,
+        Flag = "Spec_" .. plr.UserId,
+        Callback = function(Value)
+            if Value then
+                -- matikan semua toggle lain biar hanya satu aktif
+                for id, tg in pairs(playerToggles) do
+                    if id ~= plr.UserId then
+                        tg:Set(false)
+                    end
+                end
+                StartSpectate(plr)
+            else
+                if currentSpectateTarget == plr then
+                    StopSpectate()
+                end
+            end
+        end,
+    })
+    playerToggles[plr.UserId] = toggle
+end
+
+-- Hapus toggle saat player keluar
+local function RemovePlayerToggle(plr)
+    local tg = playerToggles[plr.UserId]
+    if tg then
+        tg:Set(false)
+        playerToggles[plr.UserId] = nil
+    end
+end
+
+-- Muat semua player awal
+for _, plr in ipairs(Players:GetPlayers()) do
+    AddPlayerToggle(plr)
+end
+
+-- Update list jika ada player join/leave
+Players.PlayerAdded:Connect(AddPlayerToggle)
+Players.PlayerRemoving:Connect(RemovePlayerToggle)
+
+-- =============================================================
+-- SPECTATOR - END
+-- =============================================================
 
 
 
