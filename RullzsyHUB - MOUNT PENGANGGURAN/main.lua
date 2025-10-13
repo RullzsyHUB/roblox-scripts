@@ -388,7 +388,7 @@ BypassTab:CreateToggle({
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/json_mount_pengangguran"
+local jsonFolder = mainFolder .. "/js_mount_pengangguran"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -2265,5 +2265,6 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
 
 
