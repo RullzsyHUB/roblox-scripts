@@ -24,11 +24,12 @@ KeySystem = false
 -- =========================================================== =
 local MainTab = Window:CreateTab("List Scripts", 4483362458)
 
-MainTab:CreateSection("🟢 All Script: 12")
+MainTab:CreateSection("🟢 All Script: 3")
 
 local ReleasedScripts = {
 { Name = "MOUNT ATIN", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ATIN/main.lua" },
 { Name = "MOUNT ARUNIKA", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ARUNIKA/main.lua" },
+{ Name = "MOUNT HMMM", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20HMMM/main.lua" },
 }
 
 for _, script in ipairs(ReleasedScripts) do
