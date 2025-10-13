@@ -34,10 +34,12 @@ local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
+local VirtualUser = game:GetService("VirtualUser")
 
 -------------------------------------------------------------
 -- IMPORT
 -------------------------------------------------------------
+local LocalPlayer = Players.LocalPlayer
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
@@ -587,8 +589,8 @@ local function simulateNaturalMovement(moveDirection, velocity)
     pcall(function()
         local state = humanoid:GetState()
         onGround = (state == Enum.HumanoidStateType.Running or 
-                   state == Enum.HumanoidStateType.RunningNoPhysics or 
-                   state == Enum.HumanoidStateType.Landed)
+                    state == Enum.HumanoidStateType.RunningNoPhysics or 
+                    state == Enum.HumanoidStateType.Landed)
     end)
     
     -- Only play footsteps if moving and on ground
@@ -1024,30 +1026,22 @@ local function startManualAutoWalkSequence(startCheckpoint)
         if not autoLoopEnabled then return end
 
         currentCheckpoint = currentCheckpoint + 1
+        
+        -- [[ PERUBAHAN DI SINI ]]
+        -- Jika sudah melewati checkpoint terakhir, hentikan proses.
+        -- Ini mencegahnya looping kembali ke spawnpoint saat mode manual.
         if currentCheckpoint > #jsonFiles then
-            -- Selesai semua checkpoint
-            if loopingEnabled then
-                Rayfield:Notify({
-                    Title = "Auto Walk (Manual)",
-                    Content = "Semua checkpoint selesai! Looping dari spawnpoint...",
-                    Duration = 3,
-                    Image = "repeat"
-                })
-                task.wait(1)
-                currentCheckpoint = 0
-                playNext()
-            else
-                autoLoopEnabled = false
-                isManualMode = false
-                Rayfield:Notify({
-                    Title = "Auto Walk (Manual)",
-                    Content = "Auto walk selesai!",
-                    Duration = 2,
-                    Image = "check-check"
-                })
-            end
-            return
+            autoLoopEnabled = false
+            isManualMode = false
+            Rayfield:Notify({
+                Title = "Auto Walk Selesai",
+                Content = "Telah mencapai checkpoint terakhir.",
+                Duration = 5,
+                Image = "check-check"
+            })
+            return -- Hentikan fungsi di sini
         end
+        -- [[ AKHIR DARI PERUBAHAN ]]
 
         local checkpointFile = jsonFiles[currentCheckpoint]
 
@@ -1380,7 +1374,7 @@ local Toggle = AutoWalkTab:CreateToggle({
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
     Name = "⚡ Set Speed",
-    Range = {0.5, 2},
+    Range = {0.5, 1.5},
     Increment = 0.01,
     Suffix = "x Speed",
     CurrentValue = 1.0,
@@ -1406,22 +1400,22 @@ local LoopingToggle = AutoWalkTab:CreateToggle({
    Name = "🔄 Enable Looping",
    CurrentValue = false,
    Callback = function(Value)
-       loopingEnabled = Value
-       if Value then
-           Rayfield:Notify({
-               Title = "Looping",
-               Content = "Fitur looping diaktifkan!",
-               Duration = 3,
-               Image = "repeat"
-           })
-       else
-           Rayfield:Notify({
-               Title = "Looping",
-               Content = "Fitur looping dinonaktifkan!",
-               Duration = 3,
-               Image = "x"
-           })
-       end
+        loopingEnabled = Value
+        if Value then
+            Rayfield:Notify({
+                Title = "Looping",
+                Content = "Fitur looping diaktifkan!",
+                Duration = 3,
+                Image = "repeat"
+            })
+        else
+            Rayfield:Notify({
+                Title = "Looping",
+                Content = "Fitur looping dinonaktifkan!",
+                Duration = 3,
+                Image = "x"
+            })
+        end
    end,
 })
 
@@ -1812,21 +1806,6 @@ local CP25Toggle = AutoWalkTab:CreateToggle({
     Callback = function(Value)
         if Value then
             playSingleCheckpointFile("checkpoint_25.json", 26)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 26)
-local CP26Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 26)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_26.json", 27)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -2404,6 +2383,3 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
-
-
-
