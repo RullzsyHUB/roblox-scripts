@@ -309,7 +309,7 @@ local Paragraph = BypassTab:CreateParagraph({Title = "⚠️ Keterangan", Conten
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/json_mount_yntkts"
+local jsonFolder = mainFolder .. "/js_mount_yntkts"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
