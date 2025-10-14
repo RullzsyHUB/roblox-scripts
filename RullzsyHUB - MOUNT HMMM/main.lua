@@ -1520,7 +1520,7 @@ local CP6Toggle = AutoWalkTab:CreateToggle({
 })
 
 -- Toggle Auto Walk (Checkpoint 7)
-local CP6Toggle = AutoWalkTab:CreateToggle({
+local CP7Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Checkpoint 7)",
     CurrentValue = false,
     Callback = function(Value)
@@ -1995,6 +1995,7 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -- CREDITS - END
 
 -------------------------------------------------------------
+
 
 
 
