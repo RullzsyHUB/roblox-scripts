@@ -796,8 +796,8 @@ local function debugCheckpointAfterPlayback(nextCheckpointData, onComplete)
     local currentPos = hrp.Position
     
     Rayfield:Notify({
-        Title = "🔍 Checkpoint Debug",
-        Content = "Mencari checkpoint terdekat dalam 80 studs...",
+        Title = "Auto Walk",
+        Content = "Extra Fitur berhasil di aktifkan...",
         Duration = 2,
         Image = "search"
     })
@@ -807,13 +807,6 @@ local function debugCheckpointAfterPlayback(nextCheckpointData, onComplete)
     local checkpoint, distance = findNearestCheckpoint(currentPos, CHECKPOINT_SEARCH_RADIUS)
     
     if checkpoint then
-        Rayfield:Notify({
-            Title = "✅ Checkpoint Ditemukan",
-            Content = string.format("Checkpoint ditemukan pada jarak %.1f studs!", distance),
-            Duration = 3,
-            Image = "map-pin"
-        })
-        
         -- Walk to the checkpoint first
         walkToCheckpoint(
             checkpoint,
@@ -1597,7 +1590,7 @@ local LoopingToggle = AutoWalkTab:CreateToggle({
        if Value then
            Rayfield:Notify({
                Title = "Looping",
-               Content = "Fitur looping diaktifkan! Auto walk akan loop dengan checkpoint debug 80 studs.",
+               Content = "Fitur looping diaktifkan!",
                Duration = 3,
                Image = "repeat"
            })
