@@ -20,7 +20,7 @@ local Window = Rayfield:CreateWindow({
 -- ===========================================================
 local MainTab = Window:CreateTab("List Scripts", 4483362458)
 
-MainTab:CreateSection("🟢 All Script: 11")
+MainTab:CreateSection("🟢 All Script: 12")
 
 local ReleasedScripts = {
     { Name = "MOUNT ATIN", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ATIN/main.lua" },
