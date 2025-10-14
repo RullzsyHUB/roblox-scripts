@@ -664,10 +664,10 @@ local function walkToPosition(targetPos, description, onReached, onFailed)
     local distance = (hrp.Position - targetPos).Magnitude
     
     Rayfield:Notify({
-        Title = "🚶 Auto Walk",
+        Title = "Auto Walk",
         Content = string.format("%s (%.1f studs)...", description, distance),
         Duration = 2,
-        Image = "navigation"
+        Image = "bot"
     })
     
     local reached = false
@@ -722,24 +722,24 @@ local function walkToCheckpoint(checkpoint, onReached, onFailed)
     
     walkToPosition(
         checkpoint.Position,
-        "Berjalan ke checkpoint terdekat",
+        "Menuju checkpoint",
         function()
             isSearchingCheckpoint = false
             Rayfield:Notify({
-                Title = "✅ Checkpoint Debug",
+                Title = "Auto Walk",
                 Content = "Berhasil mencapai checkpoint!",
                 Duration = 2,
-                Image = "check-circle"
+                Image = "bot"
             })
             if onReached then onReached() end
         end,
         function()
             isSearchingCheckpoint = false
             Rayfield:Notify({
-                Title = "⚠️ Checkpoint Debug",
+                Title = "Auto Walk",
                 Content = "Gagal mencapai checkpoint!",
                 Duration = 3,
-                Image = "alert-triangle"
+                Image = "ban"
             })
             if onFailed then onFailed() end
         end
@@ -760,20 +760,20 @@ local function walkToStartPosition(data, onReached, onFailed)
         "Menuju titik awal checkpoint berikutnya",
         function()
             Rayfield:Notify({
-                Title = "✅ Auto Walk",
-                Content = "Sudah sampai titik awal, memulai playback...",
+                Title = "Auto Walk",
+                Content = "Berhasil mencapai titik awal...",
                 Duration = 2,
-                Image = "play"
+                Image = "bot"
             })
             task.wait(0.3)
             if onReached then onReached() end
         end,
         function()
             Rayfield:Notify({
-                Title = "⚠️ Auto Walk",
+                Title = "Auto Walk",
                 Content = "Gagal mencapai titik awal!",
                 Duration = 3,
-                Image = "alert-triangle"
+                Image = "ban"
             })
             if onFailed then onFailed() end
         end
@@ -2161,5 +2161,4 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -- CREDITS - END
 
 -------------------------------------------------------------
-
 
