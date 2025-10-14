@@ -1517,6 +1517,21 @@ local CP6Toggle = AutoWalkTab:CreateToggle({
         end
     end,
 })
+
+-- Toggle Auto Walk (Checkpoint 7)
+local CP6Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 7)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_7.json", 8)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
 -------------------------------------------------------------
 -- AUTO WALK - END
 -------------------------------------------------------------
@@ -1979,6 +1994,7 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -- CREDITS - END
 
 -------------------------------------------------------------
+
 
 
 
