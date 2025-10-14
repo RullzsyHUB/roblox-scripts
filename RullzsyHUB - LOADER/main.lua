@@ -36,7 +36,7 @@ local UpdateLog = [[
 - Fix jalur mount pengangguran
 - Fix jalur mount nightmare
 - Fix jalur mount yahayuk
-- Fix jalur mount yntkts (Proses Update)
+- Fix jalur mount yntkts
 - Fix jalur mount hmmm
 
 🗺️ Map Baru:
