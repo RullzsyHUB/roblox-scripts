@@ -37,7 +37,7 @@ local UpdateLog = [[
 - Fix jalur mount nightmare
 - Fix jalur mount yahayuk
 - Fix jalur mount yntkts (Proses Update)
-- Fix jalur mount hmmm (Proses Update)
+- Fix jalur mount hmmm
 
 🗺️ Map Baru:
 - MOUNT YAHAYUK V1 (MANUAL): Tidak ada fitur afk, loop, jadi injek checkpoint nya manual
