@@ -1142,19 +1142,19 @@ local function startManualAutoWalkSequence(startCheckpoint)
         end
 
         Rayfield:Notify({
+			Image = "bot",
             Title = "Auto Walk (Manual)",
             Content = string.format("Menuju titik awal... (%.0f studs)", distance),
             Duration = 3,
-            Image = "walk"
         })
 
         local humanoidLocal = character:FindFirstChildOfClass("Humanoid")
         if not humanoidLocal then
             Rayfield:Notify({
+			    Image = "ban",
                 Title = "Auto Walk (Manual)",
                 Content = "Humanoid tidak ditemukan, gagal berjalan.",
                 Duration = 3,
-                Image = "ban"
             })
             autoLoopEnabled = false
             isManualMode = false
