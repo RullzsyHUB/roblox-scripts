@@ -404,6 +404,7 @@ local jsonFiles = {
 	"checkpoint_4.json",
 	"checkpoint_5.json",
     "checkpoint_6.json",
+	"checkpoint_7.json",
 }
 
 -- Variables to control auto walk status
@@ -1994,6 +1995,7 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -- CREDITS - END
 
 -------------------------------------------------------------
+
 
 
 
