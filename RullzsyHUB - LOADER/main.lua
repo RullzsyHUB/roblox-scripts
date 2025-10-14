@@ -18,7 +18,7 @@ local Window = Rayfield:CreateWindow({
 -- ===========================================================
 -- TAB MENU : UPDATE LOG / INFO HARI INI
 -- ===========================================================
-local UpdateTab = Window:CreateTab("📰 Update Log", 4483362458)
+local UpdateTab = Window:CreateTab("Update Log", 4483362458)
 UpdateTab:CreateSection("📅 Informasi Update Terbaru")
 
 -- Kamu bisa ubah isi changelog di sini ↓↓↓
@@ -26,25 +26,25 @@ local UpdateLog = [[
 📆 Update: 14 Oktober 2025
 
 🧩 Penambahan Fitur:
-- Penambahan tab "Update Log" agar user bisa tahu update terbaru.
-- Penambahan Fitur Bypass AFK (Tidak Semua Map).
-- Penambahan Fitur Visual.
-- Penambahan Fitur Otomatis mencari checkpoin (Yahayuk V2).
+- Penambahan tab "Update Log" agar user bisa tahu update terbaru
+- Penambahan fitur Bypass AFK (Kalian bisa afk push summit sambil tidur)
+- Penambahan fitur visual (Mengatur time waktu siang malam)
+- Penambahan fitur mencari checkpoint otomoatis pada map yahayuk (Enable loop)
 
 🐞 Fix:
-- Fix jalur mount atin.
-- Fix jalur mount nightmare.
-- Fix jalur mount yahayuk.
+- Fix jalur mount atin
 - Fix jalur mount pengangguran
-- Fix jalur mount yntkts (masih proses)
-- Fix jalur mount hmmm (masih proses)
+- Fix jalur mount nightmare
+- Fix jalur mount yahayuk
+- Fix jalur mount yntkts (Proses Update)
+- Fix jalur mount hmmm (Proses Update)
 
-🗺️ Map:
-- MOUNT YAHAYUK V1 (MANUAL): Versi Stabil tapi ga ada fitur, afk, otomatis injek checkpoint, jadi harus manual.
-- MOUNT YAHAYUK V2 (OTOMATIS): Versi ini masih beta dan tidak support di semua device, cuman support di beberapa device, tapi jika ingin tes silahkan.
+🗺️ Map Baru:
+- MOUNT YAHAYUK V1 (MANUAL): Tidak ada fitur afk, loop, jadi injek checkpoint nya manual
+- MOUNT YAHAYUK V2 (OTOMATIS) (BETA): Masih dalam tahap pengembangan pada fitur afk dan pencarian otomatis checkpoint nya. 
 
 💡 Catatan:
-Silakan klik menu "List Scripts" untuk menjalankan scripts.
+Silakan klik menu "List Scripts" membuka list script nya.
 ]]
 
 UpdateTab:CreateParagraph({
@@ -79,6 +79,7 @@ for _, script in ipairs(ReleasedScripts) do
         Name = "🟢 " .. script.Name,
         Callback = function()
             Rayfield:Notify({
+                Image; "timer",
                 Title = "Executing Script",
                 Content = "Loading " .. script.Name .. " Script...",
                 Duration = 4
@@ -117,6 +118,7 @@ PrivateServerTab:CreateButton({
     Name = "🛠 CREATE PRIVATE SERVER",
     Callback = function()
         Rayfield:Notify({
+            Image; "timer",
             Title = "Bypass Private Server",
             Content = "Menjalankan script bypass... tunggu sebentar.",
             Duration = 3,
@@ -152,6 +154,7 @@ PrivateServerTab:CreateButton({
     Callback = function()
         if authCode == "" then
             Rayfield:Notify({
+                Image; "ban",
                 Title = "⚠ Gagal Join",
                 Content = "Auth code tidak boleh kosong!",
                 Duration = 3
@@ -160,6 +163,7 @@ PrivateServerTab:CreateButton({
         end
 
         Rayfield:Notify({
+            Image; "timer",
             Title = "⏳ Proses Join...",
             Content = "Sedang mencoba bergabung ke server...",
             Duration = 2
@@ -171,12 +175,14 @@ PrivateServerTab:CreateButton({
 
         if success then
             Rayfield:Notify({
+                Image; "check-check",
                 Title = "✅ Berhasil Join!",
                 Content = "Kamu berhasil masuk ke private server.",
                 Duration = 3
             })
         else
             Rayfield:Notify({
+                Image; "ban",
                 Title = "❌ Gagal Join!",
                 Content = "Server tidak ditemukan atau kode auth salah.",
                 Duration = 4
@@ -190,7 +196,7 @@ PrivateServerTab:CreateButton({
 -- ===========================================================
 Rayfield:Notify({
     Image = "badge-info",
-    Title = "📰 Update Hari Ini",
-    Content = "Cek tab 'Update Log' untuk melihat update, bug fix, dan map baru!",
+    Title = "RullzsyHUB Loader",
+    Content = "Berhasil di load.",
     Duration = 7
 })
