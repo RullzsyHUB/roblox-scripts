@@ -17,7 +17,6 @@ local Window = Rayfield:CreateWindow({
 -- TAB MENU
 -------------------------------------------------------------
 local AccountTab = Window:CreateTab("Account", "user")
-local BypassTab = Window:CreateTab("Bypass", "shield")
 local AutoWalkTab = Window:CreateTab("Auto Walk", "bot")
 local VisualTab = Window:CreateTab("Visual", "layers")
 local RunAnimationTab = Window:CreateTab("Run Animation", "person-standing")
@@ -33,12 +32,10 @@ local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
-local VirtualUser = game:GetService("VirtualUser")
 
 -------------------------------------------------------------
 -- IMPORT
 -------------------------------------------------------------
-local LocalPlayer = Players.LocalPlayer
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
@@ -286,97 +283,6 @@ end)
 -------------------------------------------------------------
 -- ACCOUNT TAB - END
 -------------------------------------------------------------
-
-
-
--- =============================================================
--- BYPAS AFK
--- =============================================================
-getgenv().AntiIdleActive = false
-local AntiIdleConnection
-local MovementLoop
-
--- Fungsi untuk mulai bypass AFK
-local function StartAntiIdle()
-    -- Disconnect lama biar tidak dobel
-    if AntiIdleConnection then
-        AntiIdleConnection:Disconnect()
-        AntiIdleConnection = nil
-    end
-    if MovementLoop then
-        MovementLoop:Disconnect()
-        MovementLoop = nil
-    end
-    AntiIdleConnection = LocalPlayer.Idled:Connect(function()
-        if getgenv().AntiIdleActive then
-            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            task.wait(1)
-            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        end
-    end)
-    MovementLoop = RunService.Heartbeat:Connect(function()
-        if getgenv().AntiIdleActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local root = LocalPlayer.Character.HumanoidRootPart
-            if tick() % 60 < 0.05 then
-                root.CFrame = root.CFrame * CFrame.new(0, 0, 0.1)
-                task.wait(0.1)
-                root.CFrame = root.CFrame * CFrame.new(0, 0, -0.1)
-            end
-        end
-    end)
-end
-
--- Respawn Validation
-local function SetupCharacterListener()
-    LocalPlayer.CharacterAdded:Connect(function(newChar)
-        newChar:WaitForChild("HumanoidRootPart", 10)
-        if getgenv().AntiIdleActive then
-            StartAntiIdle()
-        end
-    end)
-end
-
-StartAntiIdle()
-SetupCharacterListener()
-
--- Section
-local Section = BypassTab:CreateSection("List All Bypass")
-
-BypassTab:CreateToggle({
-    Name = "Bypass AFK",
-    CurrentValue = false,
-    Flag = "AntiIdleToggle",
-    Callback = function(Value)
-        getgenv().AntiIdleActive = Value
-        if Value then
-            StartAntiIdle()
-            Rayfield:Notify({
-                Image = "shield",
-                Title = "Bypass AFK",
-                Content = "Bypass AFK diaktifkan",
-                Duration = 5
-            })
-        else
-            if AntiIdleConnection then
-                AntiIdleConnection:Disconnect()
-                AntiIdleConnection = nil
-            end
-            if MovementLoop then
-                MovementLoop:Disconnect()
-                MovementLoop = nil
-            end
-            Rayfield:Notify({
-                Image = "shield",
-                Title = "Bypass AFK",
-                Content = "Bypass AFK dimatikan",
-                Duration = 5
-            })
-        end
-    end,
-})
--- =============================================================
--- BYPAS AFK - END
--- =============================================================
 
 
 
@@ -1959,5 +1865,6 @@ CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
 -------------------------------------------------------------
+
 
 
