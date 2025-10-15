@@ -41,7 +41,8 @@ local UpdateLog = [[
 
 🗺️ Map Baru:
 - MOUNT YAHAYUK V1 (MANUAL): Tidak ada fitur afk, loop, jadi injek checkpoint nya manual
-- MOUNT YAHAYUK V2 (OTOMATIS) (BETA): Masih dalam tahap pengembangan pada fitur afk dan pencarian otomatis checkpoint nya. 
+- MOUNT YAHAYUK V2 (OTOMATIS) (BETA): Masih dalam tahap pengembangan pada fitur afk dan pencarian otomatis checkpoint nya.
+- KOTA BUKAN GUNUNG (PROSES PENGERJAAN)
 
 💡 Catatan:
 Silakan klik menu "List Scripts" membuka list script nya.
@@ -56,7 +57,7 @@ UpdateTab:CreateParagraph({
 -- TAB MENU : LIST SCRIPT
 -- ===========================================================
 local MainTab = Window:CreateTab("List Scripts", 4483362458)
-MainTab:CreateSection("🟢 All Script: 13")
+MainTab:CreateSection("🟢 All Script: 14")
 
 local ReleasedScripts = {
     { Name = "MOUNT ATIN", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ATIN/main.lua" },
@@ -72,6 +73,7 @@ local ReleasedScripts = {
     { Name = "MOUNT YAHAYUK V2 (OTOMATIS) (BETA)", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V2/main.lua" },
     { Name = "MOUNT YNTKTS", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YNTKTS/main.lua" },
     { Name = "MOUNT DAUN", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20DAUN/main.lua" },
+    { Name = "KOTA BUKAN GUNUNG", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20KOTA%20BUKAN%20GUNUNG/main.lua" },
 }
 
 for _, script in ipairs(ReleasedScripts) do
