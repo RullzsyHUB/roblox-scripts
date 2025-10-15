@@ -65,6 +65,7 @@ local ReleasedScripts = {
     { Name = "MOUNT YNTKTS", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YNTKTS/main.lua" },
     { Name = "MOUNT DAUN", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20DAUN/main.lua" },
     { Name = "KOTA BUKAN GUNUNG", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20KOTA%20BUKAN%20GUNUNG/main.lua" },
+    { Name = "MOUNT KAWAH EXPEDITION", URL = "https://github.com/RullzsyHUB/roblox-scripts/blob/main/RullzsyHUB%20-%20MOUNT%20KAWAH%20EXPEDITION/main.lua" },
 }
 
 for _, script in ipairs(ReleasedScripts) do
