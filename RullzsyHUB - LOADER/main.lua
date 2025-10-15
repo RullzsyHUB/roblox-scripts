@@ -33,7 +33,8 @@ local UpdateLog = [[
 - Fix jalur Yahayuk V1 & V2 (Jalankan Update Script Nya)
 
 🗺️ Map Baru:
-- KOTA BUKAN GUNUNG (NEW MAP)
+- KOTA BUKAN GUNUNG (NEW MAP) > EVENT 10 SUMMIT
+- MOUNT KAWAH TERJUN (HARD) > EVENT 850 SUMMIT
 
 💡 Catatan:
 Silakan klik menu "List Scripts" membuka list script nya.
