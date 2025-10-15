@@ -23,26 +23,17 @@ UpdateTab:CreateSection("📅 Informasi Update Terbaru")
 
 -- Kamu bisa ubah isi changelog di sini ↓↓↓
 local UpdateLog = [[
-📆 Update: 14 Oktober 2025
+📆 Update: 15 Oktober 2025
 
 🧩 Penambahan Fitur:
-- Penambahan tab "Update Log" agar user bisa tahu update terbaru
-- Penambahan fitur Bypass AFK (Kalian bisa afk push summit sambil tidur)
-- Penambahan fitur visual (Mengatur time waktu siang malam)
-- Penambahan fitur mencari checkpoint otomoatis pada map yahayuk (Enable loop)
+- Fitur masih belum ada yang baru
 
 🐞 Fix:
-- Fix jalur mount atin
-- Fix jalur mount pengangguran
-- Fix jalur mount nightmare
-- Fix jalur mount yahayuk
-- Fix jalur mount yntkts
-- Fix jalur mount hmmm
+- Fix update mount daun (proses)
+- Fix jalur Yahayuk V1 & V2 (Jalankan Update Script Nya)
 
 🗺️ Map Baru:
-- MOUNT YAHAYUK V1 (MANUAL): Tidak ada fitur afk, loop, jadi injek checkpoint nya manual
-- MOUNT YAHAYUK V2 (OTOMATIS) (BETA): Masih dalam tahap pengembangan pada fitur afk dan pencarian otomatis checkpoint nya.
-- KOTA BUKAN GUNUNG (PROSES PENGERJAAN)
+- KOTA BUKAN GUNUNG (NEW MAP)
 
 💡 Catatan:
 Silakan klik menu "List Scripts" membuka list script nya.
