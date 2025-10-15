@@ -30,7 +30,7 @@ local UpdateLog = [[
 
 🐞 Fix:
 - Fix update mount daun (proses)
-- Fix jalur Yahayuk V1 & V2 (Jalankan Update Script Nya)
+- Fix jalur Yahayuk (Jalankan Update Script Nya)
 
 🗺️ Map Baru:
 - KOTA BUKAN GUNUNG (NEW MAP) > EVENT 10 SUMMIT
@@ -61,8 +61,7 @@ local ReleasedScripts = {
     { Name = "MOUNT YACAPE", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YACAPE/main.lua" },
     { Name = "MOUNT YUKARI", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YUKARI/main.lua" },
     { Name = "NIGHTMARE EXPEDITION", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20NIGHTMARE%20EXPEDITION/main.lua" },
-    { Name = "MOUNT YAHAYUK V1 (MANUAL)", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua" },
-    { Name = "MOUNT YAHAYUK V2 (OTOMATIS) (BETA)", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V2/main.lua" },
+    { Name = "MOUNT YAHAYUK", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua" },
     { Name = "MOUNT YNTKTS", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YNTKTS/main.lua" },
     { Name = "MOUNT DAUN", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20DAUN/main.lua" },
     { Name = "KOTA BUKAN GUNUNG", URL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20KOTA%20BUKAN%20GUNUNG/main.lua" },
