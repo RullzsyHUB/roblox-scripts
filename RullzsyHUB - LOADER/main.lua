@@ -23,18 +23,18 @@ UpdateTab:CreateSection("📅 Informasi Update Terbaru")
 
 -- Kamu bisa ubah isi changelog di sini ↓↓↓
 local UpdateLog = [[
-📆 Update: 15 Oktober 2025
+📆 Update: 16 Oktober 2025
 
 🧩 Penambahan Fitur:
-- Fitur masih belum ada yang baru
+- MT YAHAYUK > Mode 180 Derajat: Pause/Rotate Menu (Sekarang bisa di pindahkan pause dan resume nya)
+- MT YAHAYUK > Always Run (Ga perlu pencet shift khusus pc buat sprint, udh otomatis)
 
 🐞 Fix:
-- Fix update mount daun (proses)
-- Fix jalur Yahayuk (Jalankan Update Script Nya)
+- New Jalur Mount Atin
+- New Jalur Checkpoint 5 (Jalankan update Script nya)
 
 🗺️ Map Baru:
-- KOTA BUKAN GUNUNG (NEW MAP) > EVENT 10 SUMMIT
-- MOUNT KAWAH TERJUN (HARD) > EVENT 850 SUMMIT
+- Besok kita lanjut req map, sekarang kita fokus dulu ke event event ya gess...
 
 💡 Catatan:
 Silakan klik menu "List Scripts" membuka list script nya.
