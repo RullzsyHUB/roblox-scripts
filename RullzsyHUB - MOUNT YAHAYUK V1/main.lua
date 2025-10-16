@@ -304,10 +304,10 @@ local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-jso
 local jsonFiles = {
     "spawnpoint.json",
     "checkpoint_1.json",
-	"checkpoint_2.json",
-	"checkpoint_3.json",
-	"checkpoint_4.json",
-	"checkpoint_5.json",
+    "checkpoint_2.json",
+    "checkpoint_3.json",
+    "checkpoint_4.json",
+    "checkpoint_5.json",
 }
 
 -- Variables to control auto walk status
@@ -343,6 +343,11 @@ local playbackSpeed = 1.0
 local lastFootstepTime = 0
 local footstepInterval = 0.35
 local leftFootstep = true
+
+-- NEW: Rotate/Flip Variables
+local isFlipped = false
+local FLIP_SMOOTHNESS = 0.05
+local currentFlipRotation = CFrame.new()
 -------------------------------------------------------------
 
 -----| AUTO WALK FUNCTIONS |-----
@@ -426,30 +431,11 @@ local function playFootstepSound()
             
             -- Create a sound instance for footstep
             local sound = Instance.new("Sound")
-            sound.Volume = 0.8 -- Increased volume for louder footsteps
+            sound.Volume = 0.8
             sound.RollOffMaxDistance = 100
             sound.RollOffMinDistance = 10
             
-            -- Assign sound based on material
-            -- Using Roblox's built-in footstep sounds
             local soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            
-            -- Different sounds for different materials
-            if material == Enum.Material.Grass then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Wood or material == Enum.Material.WoodPlanks then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Metal or material == Enum.Material.DiamondPlate or material == Enum.Material.CorrodedMetal then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Water then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Snow or material == Enum.Material.Glacier or material == Enum.Material.Ice then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            elseif material == Enum.Material.Sand then
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            else
-                soundId = "rbxasset://sounds/action_footsteps_plastic.mp3"
-            end
             
             sound.SoundId = soundId
             sound.Parent = hrp
@@ -489,7 +475,7 @@ local function simulateNaturalMovement(moveDirection, velocity)
         if currentTime - lastFootstepTime >= adjustedInterval then
             playFootstepSound()
             lastFootstepTime = currentTime
-            leftFootstep = not leftFootstep -- Alternate feet
+            leftFootstep = not leftFootstep
         end
     end
 end
@@ -524,7 +510,6 @@ local function loadCheckpoint(fileName)
     end)
     
     if success and result then
-        -- NEW: Try to extract recorded hip height from first frame
         if result[1] and result[1].hipHeight then
             recordedHipHeight = result[1].hipHeight
         end
@@ -541,7 +526,6 @@ local function findSurroundingFrames(data, t)
     if t <= data[1].time then return 1, 1, 0 end
     if t >= data[#data].time then return #data, #data, 0 end
     
-    -- Binary search for efficiency
     local left, right = 1, #data
     while left < right - 1 do
         local mid = math.floor((left + right) / 2)
@@ -566,16 +550,18 @@ local function stopPlayback()
     pausedTime = 0
     accumulatedTime = 0
     lastPlaybackTime = 0
-    lastFootstepTime = 0 -- Reset footstep timer
+    lastFootstepTime = 0
     recordedHipHeight = nil
     hipHeightOffset = 0
+    isFlipped = false
+    currentFlipRotation = CFrame.new()
     if playbackConnection then
         playbackConnection:Disconnect()
         playbackConnection = nil
     end
 end
 
--- IMPROVED: FPS-independent playback with avatar size compensation
+-- IMPROVED: FPS-independent playback with avatar size compensation and rotate feature
 local function startPlayback(data, onComplete)
     if not data or #data == 0 then
         warn("No data to play!")
@@ -593,7 +579,6 @@ local function startPlayback(data, onComplete)
     lastPlaybackTime = playbackStartTime
     local lastJumping = false
     
-    -- NEW: Calculate hip height offset at start
     calculateHipHeightOffset()
     
     if playbackConnection then
@@ -606,7 +591,6 @@ local function startPlayback(data, onComplete)
     if character and character:FindFirstChild("HumanoidRootPart") then
         local hrp = character.HumanoidRootPart
         local firstPos = tableToVec(first.position)
-        -- NEW: Apply avatar size adjustment
         firstPos = adjustPositionForAvatarSize(firstPos)
         local firstYaw = first.rotation or 0
         local startCFrame = CFrame.new(firstPos) * CFrame.Angles(0, firstYaw, 0)
@@ -641,19 +625,15 @@ local function startPlayback(data, onComplete)
         if not character or not character:FindFirstChild("HumanoidRootPart") then return end
         if not humanoid or humanoid.Parent ~= character then
             humanoid = character:FindFirstChild("Humanoid")
-            -- Recalculate offset if humanoid changed
             calculateHipHeightOffset()
         end
         
-        -- FPS-independent time tracking using deltaTime
         local currentTime = tick()
         local actualDelta = currentTime - lastPlaybackTime
         lastPlaybackTime = currentTime
         
-        -- Clamp delta to prevent huge jumps on lag spikes
         actualDelta = math.min(actualDelta, 0.1)
         
-        -- NEW: Apply playback speed multiplier
         accumulatedTime = accumulatedTime + (actualDelta * playbackSpeed)
         
         local totalDuration = data[#data].time
@@ -664,11 +644,15 @@ local function startPlayback(data, onComplete)
             if character and character:FindFirstChild("HumanoidRootPart") then
                 local hrp = character.HumanoidRootPart
                 local finalPos = tableToVec(final.position)
-                -- NEW: Apply avatar size adjustment
                 finalPos = adjustPositionForAvatarSize(finalPos)
                 local finalYaw = final.rotation or 0
                 local targetCFrame = CFrame.new(finalPos) * CFrame.Angles(0, finalYaw, 0)
-                hrp.CFrame = targetCFrame
+                
+                -- Apply flip rotation if enabled
+                local targetFlipRotation = isFlipped and CFrame.Angles(0, math.pi, 0) or CFrame.new()
+                currentFlipRotation = currentFlipRotation:Lerp(targetFlipRotation, FLIP_SMOOTHNESS)
+                
+                hrp.CFrame = targetCFrame * currentFlipRotation
                 if humanoid then
                     humanoid:Move(tableToVec(final.moveDirection or {x=0,y=0,z=0}), false)
                 end
@@ -693,7 +677,6 @@ local function startPlayback(data, onComplete)
         local yaw1 = f1.rotation or 0
         
         local interpPos = lerpVector(pos0, pos1, alpha)
-        -- NEW: Apply avatar size adjustment to interpolated position
         interpPos = adjustPositionForAvatarSize(interpPos)
         
         local interpVel = lerpVector(vel0, vel1, alpha)
@@ -703,11 +686,13 @@ local function startPlayback(data, onComplete)
         local hrp = character.HumanoidRootPart
         local targetCFrame = CFrame.new(interpPos) * CFrame.Angles(0, interpYaw, 0)
         
-        -- Dynamic lerp factor based on deltaTime
-        local lerpFactor = math.clamp(1 - math.exp(-10 * actualDelta), 0, 1)
-        hrp.CFrame = hrp.CFrame:Lerp(targetCFrame, lerpFactor)
+        -- NEW: Apply flip/rotate transformation
+        local targetFlipRotation = isFlipped and CFrame.Angles(0, math.pi, 0) or CFrame.new()
+        currentFlipRotation = currentFlipRotation:Lerp(targetFlipRotation, FLIP_SMOOTHNESS)
         
-        -- Apply velocity more directly
+        local lerpFactor = math.clamp(1 - math.exp(-10 * actualDelta), 0, 1)
+        hrp.CFrame = hrp.CFrame:Lerp(targetCFrame * currentFlipRotation, lerpFactor)
+        
         pcall(function()
             hrp.AssemblyLinearVelocity = interpVel
         end)
@@ -716,7 +701,6 @@ local function startPlayback(data, onComplete)
             humanoid:Move(interpMove, false)
         end
         
-        -- NEW: Simulate footstep sounds
         simulateNaturalMovement(interpMove, interpVel)
         
         -- Handle jumping
@@ -740,9 +724,7 @@ local function startAutoWalkSequence()
         
         currentCheckpoint = currentCheckpoint + 1
         if currentCheckpoint > #jsonFiles then
-            -- All checkpoints completed
             if loopingEnabled then
-                -- Loop kembali dari awal
                 Rayfield:Notify({
                     Title = "Auto Walk",
                     Content = "Semua checkpoint selesai! Looping dari awal...",
@@ -801,13 +783,12 @@ local function startAutoWalkSequence()
     playNext()
 end
 
--- Function to run manual auto walk with looping (fixed: walk to start for the first checkpoint)
+-- Function to run manual auto walk with looping
 local function startManualAutoWalkSequence(startCheckpoint)
     currentCheckpoint = startCheckpoint - 1
     isManualMode = true
     autoLoopEnabled = true
 
-    -- helper: try walk to first frame's start position (returns true if reached)
     local function walkToStartIfNeeded(data)
         if not character or not character:FindFirstChild("HumanoidRootPart") then
             Rayfield:Notify({
@@ -821,13 +802,12 @@ local function startManualAutoWalkSequence(startCheckpoint)
 
         local hrp = character.HumanoidRootPart
         if not data or not data[1] or not data[1].position then
-            return true -- nothing to walk to
+            return true
         end
 
         local startPos = tableToVec(data[1].position)
         local distance = (hrp.Position - startPos).Magnitude
 
-        -- jarak maksimum
         if distance > 100 then
             Rayfield:Notify({
                 Title = "Auto Walk (Manual)",
@@ -860,7 +840,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
             return false
         end
 
-        -- Mulai MoveTo
         local reached = false
         local reachedConnection
         reachedConnection = humanoidLocal.MoveToFinished:Connect(function(r)
@@ -873,7 +852,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
 
         humanoidLocal:MoveTo(startPos)
 
-        -- Timeout & monitor (boleh dibatalkan jika autoLoopEnabled diubah)
         local timeout = 20
         local waited = 0
         while not reached and waited < timeout and autoLoopEnabled do
@@ -890,7 +868,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
             })
             return true
         else
-            -- jika gagal (timeout atau dibatalkan)
             if reachedConnection then
                 reachedConnection:Disconnect()
                 reachedConnection = nil
@@ -912,7 +889,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
 
         currentCheckpoint = currentCheckpoint + 1
         if currentCheckpoint > #jsonFiles then
-            -- Selesai semua checkpoint
             if loopingEnabled then
                 Rayfield:Notify({
                     Title = "Auto Walk (Manual)",
@@ -955,18 +931,13 @@ local function startManualAutoWalkSequence(startCheckpoint)
         if data and #data > 0 then
             task.wait(0.5)
 
-            -- Jika ini checkpoint pertama yang diminta user (ketika mulai manual+loop),
-            -- maka jalan dulu ke titik awal sebelum startPlayback agar tidak teleport.
             if isManualMode and currentCheckpoint == startCheckpoint then
                 local okWalk = walkToStartIfNeeded(data)
                 if not okWalk then
-                    -- walk gagal / dibatalkan -> hentikan sequence
                     return
                 end
             end
 
-            -- Mulai playback (startPlayback masih melakukan penyesuaian posisi internal,
-            -- tetapi sekarang character sudah berada di posisi awal sehingga teleport tidak terlihat)
             startPlayback(data, playNext)
         else
             Rayfield:Notify({
@@ -982,7 +953,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
 
     playNext()
 end
-
 
 -- Function to rotate a single checkpoint (manual)
 local function playSingleCheckpointFile(fileName, checkpointIndex)
@@ -1029,11 +999,9 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         return
     end
 
-    -- Titik awal checkpoint dari JSON
     local startPos = tableToVec(data[1].position)
     local distance = (hrp.Position - startPos).Magnitude
 
-    -- Jika jarak > 100 studs, batalkan
     if distance > 100 then
         Rayfield:Notify({
             Title = "Auto Walk (Manual)",
@@ -1051,12 +1019,10 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         Image = "walk"
     })
 
-    -- Buat fungsi untuk berjalan otomatis menuju titik awal
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local moving = true
     humanoid:MoveTo(startPos)
 
-    -- Pastikan karakter benar-benar berjalan (tidak teleport)
     local reachedConnection
     reachedConnection = humanoid.MoveToFinished:Connect(function(reached)
         if reached then
@@ -1070,7 +1036,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
                 Image = "play"
             })
 
-            -- Setelah sampai, mulai playback seperti biasa
             task.wait(0.5)
             startPlayback(data, function()
                 Rayfield:Notify({
@@ -1092,7 +1057,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         end
     end)
 
-    -- Timeout antisipasi jika macet (misalnya terhalang)
     task.spawn(function()
         local timeout = 20
         local elapsed = 0
@@ -1125,143 +1089,397 @@ end)
 
 -------------------------------------------------------------
 
--------------------------------------------------------------
-
 -----| MENU 1 > AUTO WALK SETTINGS |-----
 local Section = AutoWalkTab:CreateSection("Auto Walk (Settings)")
 
 -------------------------------------------------------------
--- PAUSE FUNCTION (NO BACKGROUND VERSION)
+-- PAUSE/ROTATE UI (MOBILE FRIENDLY & DRAGGABLE - EMOJI ONLY)
 -------------------------------------------------------------
 local BTN_COLOR = Color3.fromRGB(38, 38, 38)
 local BTN_HOVER = Color3.fromRGB(55, 55, 55)
 local TEXT_COLOR = Color3.fromRGB(230, 230, 230)
 local WARN_COLOR = Color3.fromRGB(255, 140, 0)
 local SUCCESS_COLOR = Color3.fromRGB(0, 170, 85)
+local ROTATE_COLOR = Color3.fromRGB(100, 100, 255)
 
-local function createPauseResumeUI()
+local function createPauseRotateUI()
     local ui = Instance.new("ScreenGui")
-    ui.Name = "PauseResumeUI"
+    ui.Name = "PauseRotateUI"
     ui.IgnoreGuiInset = true
     ui.ResetOnSpawn = false
     ui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ui.Parent = CoreGui
 
-    -- Hilangkan frame utama (jadi cuma wadah transparan)
+    -- Background container with semi-transparent black background
+    local bgFrame = Instance.new("Frame")
+    bgFrame.Name = "PR_Background"
+    bgFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    bgFrame.BackgroundTransparency = 0.4
+    bgFrame.BorderSizePixel = 0
+    bgFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    bgFrame.Position = UDim2.new(0.5, 0, 0.85, 0)
+    bgFrame.Size = UDim2.new(0, 130, 0, 70)
+    bgFrame.Visible = false
+    bgFrame.Parent = ui
+
+    -- Rounded corners for background
+    local bgCorner = Instance.new("UICorner", bgFrame)
+    bgCorner.CornerRadius = UDim.new(0, 20)
+
+    -- Drag indicator (3 dots at top)
+    local dragIndicator = Instance.new("Frame")
+    dragIndicator.Name = "DragIndicator"
+    dragIndicator.BackgroundTransparency = 1
+    dragIndicator.Position = UDim2.new(0.5, 0, 0, 8)
+    dragIndicator.Size = UDim2.new(0, 40, 0, 6)
+    dragIndicator.AnchorPoint = Vector2.new(0.5, 0)
+    dragIndicator.Parent = bgFrame
+
+    local dotLayout = Instance.new("UIListLayout", dragIndicator)
+    dotLayout.FillDirection = Enum.FillDirection.Horizontal
+    dotLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    dotLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    dotLayout.Padding = UDim.new(0, 6)
+
+    -- Create 3 dots
+    for i = 1, 3 do
+        local dot = Instance.new("Frame")
+        dot.Name = "Dot" .. i
+        dot.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+        dot.BackgroundTransparency = 0.3
+        dot.BorderSizePixel = 0
+        dot.Size = UDim2.new(0, 6, 0, 6)
+        dot.Parent = dragIndicator
+
+        local dotCorner = Instance.new("UICorner", dot)
+        dotCorner.CornerRadius = UDim.new(1, 0)
+    end
+
+    -- Main draggable frame (transparent, sits on top of background)
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "PR_Main"
-    mainFrame.BackgroundTransparency = 1 -- <- transparan penuh
+    mainFrame.BackgroundTransparency = 1
     mainFrame.BorderSizePixel = 0
-    mainFrame.AnchorPoint = Vector2.new(0.5, 1)
-    mainFrame.Position = UDim2.new(0.5, 0, 1, -120)
-    mainFrame.AutomaticSize = Enum.AutomaticSize.XY
-    mainFrame.Visible = false
-    mainFrame.Parent = ui
+    mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    mainFrame.Position = UDim2.new(0.5, 0, 0.6, 0)
+    mainFrame.Size = UDim2.new(1, -10, 0, 50)
+    mainFrame.Parent = bgFrame
 
+    -- Make it draggable (improved system)
+    local dragging = false
+    local dragInput, dragStart, startPos
+    local UserInputService = game:GetService("UserInputService")
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        local newPos = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+        bgFrame.Position = newPos
+    end
+
+    bgFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = bgFrame.Position
+
+            -- Animate dots when dragging starts
+            for i, dot in ipairs(dragIndicator:GetChildren()) do
+                if dot:IsA("Frame") then
+                    TweenService:Create(dot, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                        BackgroundTransparency = 0
+                    }):Play()
+                end
+            end
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    -- Reset dots color when dragging ends
+                    for i, dot in ipairs(dragIndicator:GetChildren()) do
+                        if dot:IsA("Frame") then
+                            TweenService:Create(dot, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                                BackgroundColor3 = Color3.fromRGB(150, 150, 150),
+                                BackgroundTransparency = 0.3
+                            }):Play()
+                        end
+                    end
+                end
+            end)
+        end
+    end)
+
+    bgFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            update(input)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if dragging then
+                dragging = false
+                -- Reset dots color
+                for i, dot in ipairs(dragIndicator:GetChildren()) do
+                    if dot:IsA("Frame") then
+                        TweenService:Create(dot, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                            BackgroundColor3 = Color3.fromRGB(150, 150, 150),
+                            BackgroundTransparency = 0.3
+                        }):Play()
+                    end
+                end
+            end
+        end
+    end)
+
+    -- Layout
     local layout = Instance.new("UIListLayout", mainFrame)
     layout.FillDirection = Enum.FillDirection.Horizontal
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     layout.VerticalAlignment = Enum.VerticalAlignment.Center
     layout.Padding = UDim.new(0, 10)
 
-    -- helper create button
-    local function createButton(text, icon, color)
+    -- Helper: create circular button with emoji only
+    local function createButton(emoji, color)
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0, 110, 0, 34)
+        btn.Size = UDim2.new(0, 50, 0, 50)
         btn.BackgroundColor3 = BTN_COLOR
         btn.BackgroundTransparency = 0.1
         btn.TextColor3 = TEXT_COLOR
         btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 14
-        btn.Text = icon .. "  " .. text
+        btn.TextSize = 24
+        btn.Text = emoji
         btn.AutoButtonColor = false
         btn.BorderSizePixel = 0
         btn.Parent = mainFrame
 
+        -- Circular shape
         local c = Instance.new("UICorner", btn)
-        c.CornerRadius = UDim.new(0, 8)
-
+        c.CornerRadius = UDim.new(1, 0)
+        
+        -- Hover effects
         btn.MouseEnter:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundColor3 = BTN_HOVER}):Play()
+            TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = BTN_HOVER,
+                Size = UDim2.new(0, 54, 0, 54)
+            }):Play()
         end)
         btn.MouseLeave:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundColor3 = BTN_COLOR}):Play()
+            TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = color or BTN_COLOR,
+                Size = UDim2.new(0, 50, 0, 50)
+            }):Play()
         end)
 
         return btn
     end
 
-    local pauseBtn = createButton("PAUSE", "⏸️", WARN_COLOR)
-    local resumeBtn = createButton("RESUME", "▶️", SUCCESS_COLOR)
+    local pauseResumeBtn = createButton("⏸️", BTN_COLOR)
+    local rotateBtn = createButton("🔄", BTN_COLOR)
 
-    -- Animasi muncul / hilang tanpa background
-    local tweenTime = 0.3
-    local finalYOffset = -120
-    local hiddenYOffset = 20
+    -- State tracking
+    local currentlyPaused = false
+
+    -- Animation functions
+    local tweenTime = 0.25
+    local showScale = 1
+    local hideScale = 0
 
     local function showUI()
-        mainFrame.Position = UDim2.new(0.5, 0, 1, hiddenYOffset)
-        mainFrame.Visible = true
-        TweenService:Create(mainFrame, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0.5, 0, 1, finalYOffset)
+        bgFrame.Visible = true
+        bgFrame.Size = UDim2.new(0, 130 * hideScale, 0, 70 * hideScale)
+        TweenService:Create(bgFrame, TweenInfo.new(tweenTime, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 130 * showScale, 0, 70 * showScale)
         }):Play()
     end
 
     local function hideUI()
-        TweenService:Create(mainFrame, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-            Position = UDim2.new(0.5, 0, 1, hiddenYOffset)
+        TweenService:Create(bgFrame, TweenInfo.new(tweenTime, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 130 * hideScale, 0, 70 * hideScale)
         }):Play()
         task.delay(tweenTime, function()
-            mainFrame.Visible = false
+            bgFrame.Visible = false
         end)
     end
 
-    -- Integrasi pause/resume
-    pauseBtn.MouseButton1Click:Connect(function()
+    -- Pause/Resume button logic
+    pauseResumeBtn.MouseButton1Click:Connect(function()
         if not isPlaying then
-            Rayfield:Notify({Title = "Auto Walk", Content = "Tidak ada auto walk yang sedang berjalan.", Duration = 3, Image = "alert-triangle"})
+            Rayfield:Notify({
+                Title = "Auto Walk",
+                Content = "❌ Tidak ada auto walk yang sedang berjalan!",
+                Duration = 3,
+                Image = "alert-triangle"
+            })
             return
         end
-        if not isPaused then
+
+        if not currentlyPaused then
+            -- Pause the auto walk
             isPaused = true
-            Rayfield:Notify({Title = "Auto Walk", Content = "Auto walk dijeda.", Duration = 2, Image = "pause"})
+            currentlyPaused = true
+            pauseResumeBtn.Text = "▶️"
+            pauseResumeBtn.BackgroundColor3 = SUCCESS_COLOR
+            Rayfield:Notify({
+                Title = "Auto Walk",
+                Content = "⏸️ Auto walk dijeda.",
+                Duration = 2,
+                Image = "pause"
+            })
+        else
+            -- Resume the auto walk
+            isPaused = false
+            currentlyPaused = false
+            pauseResumeBtn.Text = "⏸️"
+            pauseResumeBtn.BackgroundColor3 = BTN_COLOR
+            Rayfield:Notify({
+                Title = "Auto Walk",
+                Content = "▶️ Auto walk dilanjutkan.",
+                Duration = 2,
+                Image = "play"
+            })
         end
     end)
 
-    resumeBtn.MouseButton1Click:Connect(function()
+    -- Rotate button logic
+    rotateBtn.MouseButton1Click:Connect(function()
         if not isPlaying then
-            Rayfield:Notify({Title = "Auto Walk", Content = "Tidak ada auto walk yang sedang berjalan.", Duration = 3, Image = "alert-triangle"})
+            Rayfield:Notify({
+                Title = "Rotate",
+                Content = "❌ Auto walk harus berjalan terlebih dahulu!",
+                Duration = 3,
+                Image = "alert-triangle"
+            })
             return
         end
-        if isPaused then
-            isPaused = false
-            Rayfield:Notify({Title = "Auto Walk", Content = "Auto walk dilanjutkan.", Duration = 2, Image = "play"})
+
+        isFlipped = not isFlipped
+        
+        if isFlipped then
+            rotateBtn.Text = "🔃"
+            rotateBtn.BackgroundColor3 = SUCCESS_COLOR
+            Rayfield:Notify({
+                Title = "Rotate",
+                Content = "🔄 Mode rotate AKTIF (jalan mundur)",
+                Duration = 2,
+                Image = "rotate-cw"
+            })
+        else
+            rotateBtn.Text = "🔄"
+            rotateBtn.BackgroundColor3 = BTN_COLOR
+            Rayfield:Notify({
+                Title = "Rotate",
+                Content = "🔄 Mode rotate NONAKTIF",
+                Duration = 2,
+                Image = "rotate-ccw"
+            })
         end
     end)
+
+    -- Reset UI state when auto walk stops
+    local function resetUIState()
+        currentlyPaused = false
+        pauseResumeBtn.Text = "⏸️"
+        pauseResumeBtn.BackgroundColor3 = BTN_COLOR
+        isFlipped = false
+        rotateBtn.Text = "🔄"
+        rotateBtn.BackgroundColor3 = BTN_COLOR
+    end
 
     return {
-        mainFrame = mainFrame,
+        mainFrame = bgFrame,
         showUI = showUI,
-        hideUI = hideUI
+        hideUI = hideUI,
+        resetUIState = resetUIState
     }
 end
 
--- Buat UI instance
-local pauseResumeUI = createPauseResumeUI()
+-- Create UI instance
+local pauseRotateUI = createPauseRotateUI()
+
+-- Override stopPlayback to reset UI state
+local originalStopPlayback = stopPlayback
+stopPlayback = function()
+    originalStopPlayback()
+    pauseRotateUI.resetUIState()
+end
 
 -------------------------------------------------------------
 -- TOGGLE
 -------------------------------------------------------------
 local Toggle = AutoWalkTab:CreateToggle({
-    Name = "Pause/Resume Menu",
+    Name = "Pause/Rotate Menu",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            pauseResumeUI.showUI()
+            pauseRotateUI.showUI()
         else
-            pauseResumeUI.hideUI()
+            pauseRotateUI.hideUI()
         end
     end,
+})
+
+-- Variable Always Sprint
+local normalSpeed = 16
+local sprintSpeed = 24
+local autoShift = false
+
+-- Function Always Sprint
+local function applyAutoShift(character)
+	local humanoid = character:WaitForChild("Humanoid", 5)
+	if humanoid then
+		if autoShift then
+			humanoid.WalkSpeed = sprintSpeed
+		else
+			humanoid.WalkSpeed = normalSpeed
+		end
+	end
+end
+
+-- Handle Respawn
+player.CharacterAdded:Connect(function(char)
+	char:WaitForChild("Humanoid")
+	task.wait(0.5)
+	if autoShift then
+		applyAutoShift(char)
+	end
+end)
+
+-- Toggle Always Sprint
+local Toggle = AutoWalkTab:CreateToggle({
+	Name = "Always Sprint",
+	CurrentValue = false,
+	Callback = function(Value)
+		autoShift = Value
+		if autoShift then
+			Rayfield:Notify({
+				Title = "Always Sprint",
+				Content = "Sprint Mode Aktif ✅",
+				Duration = 3
+			})
+		else
+			Rayfield:Notify({
+				Title = "Always Sprint",
+				Content = "Sprint Mode Nonaktif ❌",
+				Duration = 3
+			})
+		end
+		
+		if player.Character then
+			applyAutoShift(player.Character)
+		end
+	end,
 })
 
 -- Slider Speed Auto
