@@ -302,12 +302,15 @@ end
 -- Server URL and JSON checkpoint file list
 local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk_v1/"
 local jsonFiles = {
-    "spawnpoint.json",
-    "checkpoint_1.json",
+    "spawnpoint_jalur_1.json",
+    "spawnpoint_jalur_2.json",
+	"spawnpoint_jalur_3.json",
+	"checkpoint_1.json",
     "checkpoint_2.json",
     "checkpoint_3.json",
-    "checkpoint_4.json",
-    "checkpoint_5.json",
+    "checkpoint_4_jalur_1.json",
+    "checkpoint_4_jalur_2.json",
+	"checkpoint_5.json",
 }
 
 -- Variables to control auto walk status
@@ -1509,11 +1512,11 @@ local Section = AutoWalkTab:CreateSection("Auto Walk (Manual)")
 
 -- Toggle Auto Walk (Spawnpoint)
 local SCPToggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Spawnpoint)",
+    Name = "Auto Walk (Spawnpoint Jalur 1)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("spawnpoint.json", 1)
+            playSingleCheckpointFile("spawnpoint_jalur_1.json", 1)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1522,13 +1525,45 @@ local SCPToggle = AutoWalkTab:CreateToggle({
     end,
 })
 
+-- Toggle Auto Walk (Spawnpoint)
+local SCPToggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Spawnpoint Jalur 2)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("spawnpoint_jalur_2.json", 2)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Spawnpoint)
+local SCPToggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Spawnpoint Jalur 3)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("spawnpoint_jalur_3.json", 3)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+
+
 -- Toggle Auto Walk (Checkpoint 1)
 local CP1Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Checkpoint 1)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_1.json", 2)
+            playSingleCheckpointFile("checkpoint_1.json", 4)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1543,7 +1578,7 @@ local CP2Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_2.json", 3)
+            playSingleCheckpointFile("checkpoint_2.json", 5)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1558,7 +1593,7 @@ local CP3Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_3.json", 4)
+            playSingleCheckpointFile("checkpoint_3.json", 6)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1569,11 +1604,26 @@ local CP3Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 4)
 local CP4Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 4)",
+    Name = "Auto Walk (Checkpoint 4 Jalur 1)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_4.json", 5)
+            playSingleCheckpointFile("checkpoint_4_jalur_1.json", 7)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 4)
+local CP4Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 4 Jalur 2)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_4_jalur_2.json", 8)
         else
             autoLoopEnabled = false
             isManualMode = false
