@@ -22,17 +22,19 @@ local UpdateTab = Window:CreateTab("Update Log", 4483362458)
 UpdateTab:CreateSection("📅 Informasi Update Terbaru")
 
 UpdateTab:CreateParagraph({
-    Title = "🧾 Update 16 Oktober 2025",
+    Title = "🧾 Update 17 Oktober 2025",
     Content = [[
 🧩 Penambahan Fitur:
-- MT YAHAYUK > Mode 180 Derajat (Pause/Rotate Menu)
-- MT YAHAYUK > Always Run (otomatis sprint di PC)
+- Belum ada fitur baru
 
 🐞 Fix:
-- Jalur Mount Atin & Checkpoint 5 diperbaiki.
+- Jalur mount yahayuk sekarang bisa milih sendiri mulai dari bc contoh nya jalur 1,2,3. Checkpoint 4 jalur 1,2.
+- Fix jalur arunika dan sudah bisa di pake afk
+- Fix mount kawah terjun 850 Summit (Mode Hard)
+- Fix mount hmmm bug checkpoint 7
 
 🗺️ Map Baru:
-- Fokus ke event, map baru menyusul 😎
+- MOUNT ANJ (New Map)
 
 💡 Catatan:
 Klik menu "List Scripts" untuk membuka dan menjalankan script.
@@ -43,11 +45,19 @@ Klik menu "List Scripts" untuk membuka dan menjalankan script.
 -- TAB MENU : LIST SCRIPT (LOADSTRING LANGSUNG)
 -- ===========================================================
 local ScriptTab = Window:CreateTab("List Scripts", 4483362458)
-ScriptTab:CreateSection("🟢 TOTAL MAP: 14")
+ScriptTab:CreateSection("🟢 TOTAL MAP: 15")
 
 -- ===========================================================
 -- SCRIPT BUTTONS (SEMUA MAP)
 -- ===========================================================
+-- NEW
+ScriptTab:CreateButton({
+    Name = "🟢 MOUNT ANJ (NEW MAP)",
+    Callback = function()
+        Rayfield:Notify({Title="Executing", Content="Loading MOUNT ANJ...", Duration=4})
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ANJ/main.lua"))()
+    end
+})
 
 -- 1. KOTA BUKAN GUNUNG
 ScriptTab:CreateButton({
