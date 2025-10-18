@@ -1512,7 +1512,7 @@ local Section = AutoWalkTab:CreateSection("Auto Walk (Manual)")
 
 -- Toggle Auto Walk (Spawnpoint)
 local SCPToggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Spawnpoint Jalur 1)",
+    Name = "Auto Walk (Spawnpoint | Jalur Merah)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -1527,7 +1527,7 @@ local SCPToggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Spawnpoint)
 local SCPToggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Spawnpoint Jalur 2)",
+    Name = "Auto Walk (Spawnpoint | Jalur Dontol)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -1542,7 +1542,7 @@ local SCPToggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Spawnpoint)
 local SCPToggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Spawnpoint Jalur 3)",
+    Name = "Auto Walk (Spawnpoint | Jalur Pro)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -1604,7 +1604,7 @@ local CP3Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 4)
 local CP4Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 4 Jalur 1 Lama)",
+    Name = "Auto Walk (Checkpoint 4 | Track Lama)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -1619,7 +1619,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 4)
 local CP4Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 4 Jalur 1 Baru)",
+    Name = "Auto Walk (Checkpoint 4 | Track Baru)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -1635,7 +1635,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 4)
 local CP4Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 4 Jalur 2)",
+    Name = "Auto Walk (Checkpoint 4 | Jalur Merah)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -1650,7 +1650,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 5)
 local CP5Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 5 Depan)",
+    Name = "Auto Walk (Checkpoint 5 | Track Depan)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -1665,7 +1665,7 @@ local CP5Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 5)
 local CP5Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 5 Ancang Ancang)",
+    Name = "Auto Walk (Checkpoint 5 | Track Ancang Ancang)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
