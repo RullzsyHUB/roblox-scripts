@@ -291,7 +291,7 @@ end)
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/js_mount_yahayuk_patch_002"
+local jsonFolder = mainFolder .. "/js_mount_yahayuk_patch_003"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -308,8 +308,9 @@ local jsonFiles = {
 	"checkpoint_1.json",
     "checkpoint_2.json",
     "checkpoint_3.json",
-    "checkpoint_4_jalur_1.json",
-	"checkpoint_4_Jalur_1_new.json",
+    "checkpoint_4_jalur_1_update_1.json",
+	"checkpoint_4_Jalur_1_update_2.json",
+    "checkpoint_4_Jalur_1_update_3.json",
     "checkpoint_4_jalur_2.json",
 	"checkpoint_5.json",
 	"checkpoint_5_new.json",
@@ -1602,13 +1603,30 @@ local CP3Toggle = AutoWalkTab:CreateToggle({
     end,
 })
 
+local Paragraph = AutoWalkTab:CreateParagraph({
+    Title = "⚠️ Keterangan Checkpoint 4",
+    Content = [[
+Yahayuk memiliki 3 server berbeda dan kadang kita join nya itu random bisa ke server 1, ke server 2, ke server 3. Kadang saat kita join, posisi objek bisa berubah — seperti checkpoint yang berpindah atau tangga yang bergeser.
+
+Untuk mengantisipasi hal ini di Checkpoint 4, pilih salah satu dari tiga versi berikut:
+- Auto Walk (Checkpoint 4 | Update 1): Versi Lama
+- Auto Walk (Checkpoint 4 | Update 2): Versi Update baru
+- Auto Walk (Checkpoint 4 | Update 3): Versi Update baru
+
+Jika dirasa checkpoint 4 update 1 masih bug, gunakan update 2, jika update 2 masih bug, gunakan update 3.
+
+💡 Catatan: Jalur merah merupakan rute **lewat jembatan merah (Tidak ada bug jalur)**.
+]]
+})
+
+
 -- Toggle Auto Walk (Checkpoint 4)
 local CP4Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 4 | Track Lama)",
+    Name = "Auto Walk (Checkpoint 4 | Update 1)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_4_jalur_1.json", 7)
+            playSingleCheckpointFile("checkpoint_4_jalur_1_update_1.json", 7)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1619,11 +1637,11 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 4)
 local CP4Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 4 | Track Baru)",
+    Name = "Auto Walk (Checkpoint 4 | Update 2)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_4_jalur_1_new.json", 7)
+            playSingleCheckpointFile("checkpoint_4_jalur_1_update_2.json", 7)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1631,6 +1649,22 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
         end
     end,
 })
+
+-- Toggle Auto Walk (Checkpoint 4)
+local CP4Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 4 | Update 3)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_4_jalur_1_update_3.json", 7)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
 
 
 -- Toggle Auto Walk (Checkpoint 4)
@@ -1647,6 +1681,8 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
         end
     end,
 })
+
+local Divider = AutoWalkTab:CreateDivider()
 
 -- Toggle Auto Walk (Checkpoint 5)
 local CP5Toggle = AutoWalkTab:CreateToggle({
