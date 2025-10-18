@@ -291,7 +291,7 @@ end)
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/js_mount_yahayuk_patch_003"
+local jsonFolder = mainFolder .. "/js_mount_yahayuk_patch_004"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -300,7 +300,7 @@ if not isfolder(jsonFolder) then
 end
 
 -- Server URL and JSON checkpoint file list
-local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk_v1/"
+local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk/"
 local jsonFiles = {
     "spawnpoint_jalur_1.json",
     "spawnpoint_jalur_2.json",
@@ -308,12 +308,8 @@ local jsonFiles = {
 	"checkpoint_1.json",
     "checkpoint_2.json",
     "checkpoint_3.json",
-    "checkpoint_4_jalur_1_update_1.json",
-	"checkpoint_4_Jalur_1_update_2.json",
-    "checkpoint_4_Jalur_1_update_3.json",
-    "checkpoint_4_jalur_2.json",
+    "checkpoint_4.json",
 	"checkpoint_5.json",
-	"checkpoint_5_new.json",
 }
 
 -- Variables to control auto walk status
