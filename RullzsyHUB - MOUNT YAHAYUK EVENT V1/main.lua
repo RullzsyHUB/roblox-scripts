@@ -7,7 +7,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/Rull
 -- WINDOW PROCESS
 -------------------------------------------------------------
 local Window = Rayfield:CreateWindow({
-   Name = "RullzsyHUB | MOUNT YAHAYUK",
+   Name = "RullzsyHUB | MOUNT YAHAYUK EVENT V1",
    Icon = "braces",
    LoadingTitle = "Created By RullzsyHUB",
    LoadingSubtitle = "Follow Tiktok: @rullzsy99",
@@ -291,7 +291,7 @@ end)
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/js_mount_yahayuk_patch_005"
+local jsonFolder = mainFolder .. "/js_mount_yahayuk_event_v1"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -300,16 +300,9 @@ if not isfolder(jsonFolder) then
 end
 
 -- Server URL and JSON checkpoint file list
-local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk/"
+local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk_event_v1/"
 local jsonFiles = {
-    "spawnpoint_jalur_1.json",
-    "spawnpoint_jalur_2.json",
-	"spawnpoint_jalur_3.json",
-	"checkpoint_1.json",
-    "checkpoint_2.json",
-    "checkpoint_3.json",
-    "checkpoint_4.json",
-	"checkpoint_5.json",
+    "ontosummit.json",
 }
 
 -- Variables to control auto walk status
@@ -1509,104 +1502,11 @@ local Section = AutoWalkTab:CreateSection("Auto Walk (Manual)")
 
 -- Toggle Auto Walk (Spawnpoint)
 local SCP1Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Spawnpoint | Jalur Merah)",
+    Name = "Auto Walk (One To Summit)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("spawnpoint_jalur_1.json", 1)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Spawnpoint)
-local SCP2Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Spawnpoint | Jalur Dontol)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("spawnpoint_jalur_2.json", 2)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
-
--- Toggle Auto Walk (Checkpoint 1)
-local CP1Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 1)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_1.json", 3)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 2)
-local CP2Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 2)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_2.json", 4)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 3)
-local CP3Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 3)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_3.json", 5)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
--- Toggle Auto Walk (Checkpoint 4)
-local CP4Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 4)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_4.json", 6)
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
-local Divider = AutoWalkTab:CreateDivider()
-
--- Toggle Auto Walk (Checkpoint 5)
-local CP5Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 5)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("checkpoint_5.json", 7)
+            playSingleCheckpointFile("ontosummit.json", 1)
         else
             autoLoopEnabled = false
             isManualMode = false
