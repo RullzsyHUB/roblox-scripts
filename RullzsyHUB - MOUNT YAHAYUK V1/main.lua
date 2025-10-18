@@ -312,6 +312,7 @@ local jsonFiles = {
 	"checkpoint_4_jalur_1_new.json",
     "checkpoint_4_jalur_2.json",
 	"checkpoint_5.json",
+	"checkpoint_5_new.json",
 }
 
 -- Variables to control auto walk status
