@@ -291,7 +291,7 @@ end)
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/js_mount_yahayuk_v1"
+local jsonFolder = mainFolder .. "/js_mount_yahayuk_new"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -309,7 +309,7 @@ local jsonFiles = {
     "checkpoint_2.json",
     "checkpoint_3.json",
     "checkpoint_4_jalur_1.json",
-	"checkpoint_4_jalur_1_new.json",
+	"checkpoint_4_Jalur_1_new.json",
     "checkpoint_4_jalur_2.json",
 	"checkpoint_5.json",
 	"checkpoint_5_new.json",
@@ -772,7 +772,6 @@ local function startAutoWalkSequence()
                 Duration = 2,
                 Image = "bot"
             })
-            task.wait(0.5)
             startPlayback(data, playNext)
         else
             Rayfield:Notify({
@@ -1041,7 +1040,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
                 Image = "play"
             })
 
-            task.wait(0.5)
             startPlayback(data, function()
                 Rayfield:Notify({
                     Title = "Auto Walk (Manual)",
