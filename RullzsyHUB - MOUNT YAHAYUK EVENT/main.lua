@@ -7,7 +7,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/Rull
 -- WINDOW PROCESS
 -------------------------------------------------------------
 local Window = Rayfield:CreateWindow({
-   Name = "RullzsyHUB | MOUNT YAHAYUK EVENT V3",
+   Name = "RullzsyHUB | MOUNT YAHAYUK EVENT V1",
    Icon = "braces",
    LoadingTitle = "Created By RullzsyHUB",
    LoadingSubtitle = "Follow Tiktok: @rullzsy99",
@@ -291,7 +291,7 @@ end)
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/js_mount_yahayuk_event_v3"
+local jsonFolder = mainFolder .. "/js_mount_yahayuk_event_v1"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -300,7 +300,7 @@ if not isfolder(jsonFolder) then
 end
 
 -- Server URL and JSON checkpoint file list
-local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk_event_v3/"
+local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk_event/"
 local jsonFiles = {
     "ontosummit.json",
 }
