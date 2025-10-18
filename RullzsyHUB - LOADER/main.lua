@@ -52,10 +52,10 @@ ScriptTab:CreateSection("🟢 TOTAL MAP: 15")
 -- ===========================================================
 -- 11. MOUNT YAHAYUK
 ScriptTab:CreateButton({
-    Name = "🟠 MOUNT YAHAYUK (EVENT X5) (Maintenance Bentar)",
+    Name = "🟢 MOUNT YAHAYUK (EVENT X5)",
     Callback = function()
         Rayfield:Notify({Title="Executing", Content="Yahayuk Proses Maintenance...", Duration=4})
-        --loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua"))()
     end
 })
 
