@@ -55,7 +55,7 @@ ScriptTab:CreateButton({
     Name = "🟠 MOUNT YAHAYUK (EVENT X5) V1",
     Callback = function()
         Rayfield:Notify({Title="Executing", Content="Yahayuk Proses Maintenance...", Duration=4})
-        -- loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua"))()
+        -- loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20EVENT%20V1/main.lua"))()
     end
 })
 
@@ -63,7 +63,7 @@ ScriptTab:CreateButton({
     Name = "🟠 MOUNT YAHAYUK (EVENT X5) V2",
     Callback = function()
         Rayfield:Notify({Title="Executing", Content="Yahayuk Proses Maintenance...", Duration=4})
-        -- loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua"))()
+        -- loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20EVENT%20V2/main.lua"))()
     end
 })
 
@@ -71,7 +71,7 @@ ScriptTab:CreateButton({
     Name = "🟠 MOUNT YAHAYUK (EVENT X5) V3",
     Callback = function()
         Rayfield:Notify({Title="Executing", Content="Yahayuk Proses Maintenance...", Duration=4})
-        -- loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua"))()
+        -- loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20EVENT%20V3/main.lua"))()
     end
 })
 
