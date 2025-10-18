@@ -291,7 +291,7 @@ end)
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/js_mount_yahayuk_event_v1"
+local jsonFolder = mainFolder .. "/js_mount_yahayuk_event"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -302,7 +302,7 @@ end
 -- Server URL and JSON checkpoint file list
 local baseURL = "https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts-json/refs/heads/main/json_mount_yahayuk_event/"
 local jsonFiles = {
-    "ontosummit.json",
+    "onetosummit.json",
 }
 
 -- Variables to control auto walk status
