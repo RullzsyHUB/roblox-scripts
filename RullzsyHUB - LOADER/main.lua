@@ -50,7 +50,15 @@ ScriptTab:CreateSection("🟢 TOTAL MAP: 15")
 -- ===========================================================
 -- SCRIPT BUTTONS (SEMUA MAP)
 -- ===========================================================
--- NEW
+-- 11. MOUNT YAHAYUK
+ScriptTab:CreateButton({
+    Name = "🟢 MOUNT YAHAYUK (EVENT X5)",
+    Callback = function()
+        Rayfield:Notify({Title="Executing", Content="Loading MOUNT YAHAYUK...", Duration=4})
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua"))()
+    end
+})
+
 ScriptTab:CreateButton({
     Name = "🟢 MOUNT ANJ (NEW MAP)",
     Callback = function()
@@ -146,15 +154,6 @@ ScriptTab:CreateButton({
     Callback = function()
         Rayfield:Notify({Title="Executing", Content="Loading NIGHTMARE EXPEDITION...", Duration=4})
         loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/main/RullzsyHUB%20-%20MOUNT%20NIGHTMARE%20EXPEDITION/main.lua"))()
-    end
-})
-
--- 11. MOUNT YAHAYUK
-ScriptTab:CreateButton({
-    Name = "🟢 MOUNT YAHAYUK (NEW)",
-    Callback = function()
-        Rayfield:Notify({Title="Executing", Content="Loading MOUNT YAHAYUK...", Duration=4})
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/RullzsyHUB/roblox-scripts/main/RullzsyHUB%20-%20MOUNT%20YAHAYUK%20V1/main.lua"))()
     end
 })
 
