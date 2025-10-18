@@ -309,6 +309,7 @@ local jsonFiles = {
     "checkpoint_2.json",
     "checkpoint_3.json",
     "checkpoint_4_jalur_1.json",
+	"checkpoint_4_jalur_1_new.json",
     "checkpoint_4_jalur_2.json",
 	"checkpoint_5.json",
 }
@@ -1604,7 +1605,7 @@ local CP3Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 4)
 local CP4Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 4 Jalur 1)",
+    Name = "Auto Walk (Checkpoint 4 Jalur 1 Lama)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -1619,11 +1620,27 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 4)
 local CP4Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 4 Jalur 1 Baru)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_4_jalur_1_new.json", 7)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+
+-- Toggle Auto Walk (Checkpoint 4)
+local CP4Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Checkpoint 4 Jalur 2)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_4_jalur_2.json", 8)
+            playSingleCheckpointFile("checkpoint_4_jalur_2.json", 7)
         else
             autoLoopEnabled = false
             isManualMode = false
@@ -1634,11 +1651,26 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
 
 -- Toggle Auto Walk (Checkpoint 5)
 local CP5Toggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Checkpoint 5)",
+    Name = "Auto Walk (Checkpoint 5 Depan)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_5.json", 6)
+            playSingleCheckpointFile("checkpoint_5.json", 8)
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 5)
+local CP5Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 5 Ancang Ancang)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_5_new.json", 8)
         else
             autoLoopEnabled = false
             isManualMode = false
